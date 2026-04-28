@@ -7,6 +7,7 @@
   <title>Rate Card by DG Network</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #f4f4f4;
@@ -30,7 +31,7 @@
     .logo { display: flex; align-items: center; height: 34px; }
     .logo img { height: 34px; width: auto; display: block; }
     .nav-right { display: flex; align-items: center; gap: 16px; }
-    .nav-user  { font-size: 12px; color: #aaa; }
+    .nav-user  { font-size: 12px; color: #aaa; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-admin {
       font-size: 12px; color: #fff; background: #CC0000;
       border: 1px solid #CC0000; border-radius: 6px;
@@ -145,17 +146,18 @@
     }
     .tog:hover { border-color: #aaa; }
     .tog.active { background: #CC0000; color: #fff; border-color: #CC0000; font-weight: 500; }
-    .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e8e8e8; }
-    table.tbl { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+    .tbl-wrap { overflow-x: auto; overflow-y: hidden; border-radius: 8px; border: 1px solid #e8e8e8; overscroll-behavior-x: contain; touch-action: pan-x; }
+    table.tbl { width: 100%; min-width: 1040px; border-collapse: collapse; font-size: 11px; table-layout: auto; }
     .tbl th {
       background: #f5f5f5; font-weight: 600; padding: 8px 6px;
       text-align: right; border-bottom: 1px solid #e8e8e8;
       border-right: 1px solid #e8e8e8; color: #666; font-size: 11px;
     }
     .tbl th:first-child { text-align: left; width: 74px; border-left: none; }
+    .tbl th, .tbl td { white-space: nowrap; }
     .tbl td {
       padding: 6px 6px; border-bottom: 1px solid #f0f0f0;
-      border-right: 1px solid #f0f0f0; text-align: right; font-size: 11px; color: #333;
+      border-right: 1px solid #f0f0f0; text-align: right; font-size: 11px; color: #333; font-variant-numeric: tabular-nums;
     }
     .tbl td:first-child { text-align: left; font-weight: 600; color: #666; background: #fafafa; }
     .tbl tr:last-child td { border-bottom: none; }
@@ -175,6 +177,41 @@
     .divider { border: none; border-top: 1px solid #ebebeb; margin: 28px 0; }
 
     .footer { font-size: 11px; color: #bbb; text-align: center; margin-top: 40px; }
+
+    @media (max-width: 768px) {
+      nav { padding: 10px 12px; height: auto; flex-wrap: wrap; gap: 10px; }
+      .logo img { height: 30px; }
+      .nav-right { width: 100%; justify-content: space-between; gap: 10px; }
+      .nav-user { max-width: 60vw; }
+      .page { padding: 18px 12px 56px; }
+      .page-hdr h1 { font-size: 18px; }
+      .page-hdr p { line-height: 1.6; }
+
+      .grid2 { grid-template-columns: 1fr; }
+
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .met { padding: 12px 12px; }
+      .met .mv { font-size: 16px; }
+
+      .flow { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .fb { min-width: 140px; }
+      .fa { flex: 0 0 auto; }
+
+      .tog-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+      .tog { flex: 0 0 auto; }
+
+      .tbl-wrap { -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+      table.tbl { min-width: 1180px; }
+    }
+
+    @media (max-width: 420px) {
+      .metrics { grid-template-columns: 1fr; }
+      .fb { min-width: 160px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto; transition: none !important; }
+    }
   </style>
 </head>
 <body class="loading">

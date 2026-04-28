@@ -7,13 +7,14 @@
   <title>Admin — Rate Card by DG Network</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f4; color: #111; min-height: 100vh; }
     body.loading { visibility: hidden; }
     nav { background: #111; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; position: sticky; top: 0; z-index: 10; }
     .logo { display: flex; align-items: center; height: 34px; }
     .logo img { height: 34px; width: auto; display: block; }
     .nav-right { display: flex; align-items: center; gap: 12px; }
-    .nav-user  { font-size: 12px; color: #aaa; }
+    .nav-user  { font-size: 12px; color: #aaa; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-link { font-size: 12px; color: #fff; background: transparent; border: 1px solid #444; border-radius: 6px; padding: 5px 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
     .btn-link:hover { border-color: #aaa; color: #fff; }
     .btn-signout { font-size: 12px; color: #ccc; background: transparent; border: 1px solid #444; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
@@ -37,10 +38,21 @@
     .btn-del:disabled { opacity: 0.55; cursor: not-allowed; }
     .msg { margin-top:10px; font-size:12px; color:#777; }
     .tbl-wrap { overflow-x: auto; }
-    .tbl { width: 100%; border-collapse: collapse; font-size: 12px; background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; }
+    .tbl { width: 100%; min-width: 820px; border-collapse: collapse; font-size: 12px; background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; }
     .tbl th { text-align:center; padding: 10px 8px; color:#888; font-weight:600; background:#fafafa; border-bottom: 1px solid #eee; white-space: nowrap; }
     .tbl td { text-align:center; padding: 10px 8px; border-bottom: 1px solid #f1f1f1; white-space: nowrap; }
     .tbl td:first-child, .tbl th:first-child { text-align:left; }
+
+    @media (max-width: 768px) {
+      nav { padding: 10px 12px; height: auto; flex-wrap: wrap; gap: 10px; }
+      .logo img { height: 30px; }
+      .nav-right { width: 100%; justify-content: space-between; gap: 10px; }
+      .page { padding: 18px 12px 56px; }
+      .row { gap: 8px; }
+      input[type=email] { width: 100%; font-size: 16px; }
+      .btn-invite, .btn-del, .btn-link, .btn-signout { padding: 10px 12px; }
+      .tbl-wrap { -webkit-overflow-scrolling: touch; }
+    }
   </style>
 </head>
 <body class="loading">
