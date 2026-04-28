@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>Rate Card by DG Network</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f4f4;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .logo { display: flex; justify-content: center; margin-bottom: 28px; }
+    .logo img { height: 48px; width: auto; display: block; }
+    h1 {
+      font-size: 16px;
+      font-weight: 500;
+      color: #111;
+      margin-bottom: 6px;
+    }
+    p.sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 28px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    input[type=email], input[type=password] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #111;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: #CC0000; }
+    button.btn-login {
+      width: 100%;
+      padding: 11px;
+      background: #CC0000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button.btn-login:hover { background: #aa0000; }
+    button.btn-login:disabled { background: #ccc; cursor: not-allowed; }
+    .error {
+      font-size: 12px;
+      color: #cc0000;
+      margin-top: 12px;
+      min-height: 18px;
+      text-align: center;
+    }
+    .ok {
+      font-size: 12px;
+      color: #1D9E75;
+      margin-top: 12px;
+      min-height: 18px;
+      text-align: center;
+    }
+    .forgot {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #888;
+    }
+    .forgot a {
+      color: #CC0000;
+      text-decoration: none;
+    }
+    .forgot a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <img src="/assets/dg-network-logo.png" alt="DG Network">
+    </div>
+    <h1 id="cardTitle">ESSO DOOH rate card</h1>
+    <p class="sub" id="cardSub">Sign in to access the pricing tool</p>
+
+    <label for="email">Email address</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+
+    <div id="loginBox">
+      <label for="password" id="passwordLabel">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+
+      <button class="btn-login" id="btnLogin">Sign in</button>
+    </div>
+
+    <div id="resetBox" style="display:none;">
+      <label for="newPassword">New password</label>
+      <input type="password" id="newPassword" placeholder="New password" autocomplete="new-password">
+
+      <label for="confirmPassword">Confirm new password</label>
+      <input type="password" id="confirmPassword" placeholder="Confirm new password" autocomplete="new-password">
+
+      <button class="btn-login" id="btnReset">Set new password</button>
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+    <div class="ok" id="okMsg"></div>
+
+    <div class="forgot" id="forgotWrap">
+      <a href="#" id="forgotLink">Forgot your password?</a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script type="module">
+    import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset, applyActionCode }
+                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const emailEl  = document.getElementById("email");
+    const passEl   = document.getElementById("password");
+    const btnLogin = document.getElementById("btnLogin");
+    const errorMsg = document.getElementById("errorMsg");
+    const okMsg    = document.getElementById("okMsg");
+    const forgot   = document.getElementById("forgotLink");
+    const forgotWrap = document.getElementById("forgotWrap");
+    const loginBox = document.getElementById("loginBox");
+    const resetBox = document.getElementById("resetBox");
+    const btnReset = document.getElementById("btnReset");
+    const newPasswordEl = document.getElementById("newPassword");
+    const confirmPasswordEl = document.getElementById("confirmPassword");
+    const cardTitle = document.getElementById("cardTitle");
+    const cardSub = document.getElementById("cardSub");
+
+    function setError(msg) { errorMsg.textContent = msg; }
+    function setOk(msg) { okMsg.textContent = msg; }
+
+    function showLogin() {
+      loginBox.style.display = "";
+      forgotWrap.style.display = "";
+      resetBox.style.display = "none";
+      emailEl.disabled = false;
+      emailEl.autocomplete = "email";
+      passEl.autocomplete = "current-password";
+    }
+
+    function showReset() {
+      loginBox.style.display = "none";
+      forgotWrap.style.display = "none";
+      resetBox.style.display = "";
+      emailEl.disabled = true;
+      emailEl.autocomplete = "off";
+      passEl.autocomplete = "off";
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    const oobCode = params.get("oobCode");
+
+    if (mode && oobCode) {
+      setError("");
+      setOk("");
+
+      if (mode === "resetPassword") {
+        cardTitle.textContent = "Reset password";
+        cardSub.textContent = "Choose a new password for your account";
+        showReset();
+
+        try {
+          const email = await verifyPasswordResetCode(auth, oobCode);
+          emailEl.value = email;
+        } catch (err) {
+          setError("This password reset link is invalid or has expired. Request a new one.");
+          resetBox.style.display = "none";
+          emailEl.disabled = false;
+        }
+      } else if (mode === "verifyEmail") {
+        cardTitle.textContent = "Email verified";
+        cardSub.textContent = "You can now sign in";
+        try {
+          await applyActionCode(auth, oobCode);
+          setOk("Email verified successfully.");
+        } catch (err) {
+          setError("This verification link is invalid or has expired.");
+        }
+        showLogin();
+      }
+    }
+
+    btnReset.addEventListener("click", async () => {
+      setError("");
+      setOk("");
+
+      if (!(mode === "resetPassword" && oobCode)) {
+        setError("This password reset link is missing required information.");
+        return;
+      }
+
+      const p1 = newPasswordEl.value;
+      const p2 = confirmPasswordEl.value;
+
+      if (!p1 || p1.length < 6) {
+        setError("Password must be at least 6 characters.");
+        return;
+      }
+      if (p1 !== p2) {
+        setError("Passwords do not match.");
+        return;
+      }
+
+      btnReset.disabled = true;
+      btnReset.textContent = "Updating…";
+      try {
+        await confirmPasswordReset(auth, oobCode, p1);
+        setOk("Password updated. You can now sign in.");
+        window.history.replaceState(null, "", "index.html");
+        showLogin();
+        passEl.focus();
+      } catch (err) {
+        setError("Could not reset password. Please request a new reset email and try again.");
+      } finally {
+        btnReset.disabled = false;
+        btnReset.textContent = "Set new password";
+      }
+    });
+
+    btnLogin.addEventListener("click", async () => {
+      if (mode && oobCode) {
+        window.history.replaceState(null, "", "index.html");
+      }
+      setError("");
+      setOk("");
+      const email    = emailEl.value.trim();
+      const password = passEl.value;
+
+      if (!email || !password) { setError("Please enter your email and password."); return; }
+
+      btnLogin.disabled    = true;
+      btnLogin.textContent = "Signing in…";
+
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        const userEmail = result.user.email.toLowerCase();
+
+        if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(userEmail)) {
+          await auth.signOut();
+          setError("Your account is not authorised to access this tool.");
+          return;
+        }
+        window.location.href = "tool.html";
+      } catch (err) {
+        const msgs = {
+          "auth/invalid-credential":   "Incorrect email or password.",
+          "auth/user-not-found":        "No account found with that email.",
+          "auth/wrong-password":        "Incorrect password.",
+          "auth/too-many-requests":     "Too many attempts. Please try again later.",
+          "auth/invalid-email":         "Please enter a valid email address.",
+        };
+        setError(msgs[err.code] || "Sign-in failed. Please try again.");
+      } finally {
+        btnLogin.disabled    = false;
+        btnLogin.textContent = "Sign in";
+      }
+    });
+
+    passEl.addEventListener("keydown", e => { if (e.key === "Enter") btnLogin.click(); });
+
+    forgot.addEventListener("click", async e => {
+      e.preventDefault();
+      const email = emailEl.value.trim();
+      if (!email) { setError("Enter your email address above first."); return; }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        setError("");
+        setOk("");
+        alert("Password reset email sent. Check your inbox.");
+      } catch (err) {
+        setError("Could not send reset email. Check the address and try again.");
+      }
+    });
+  </script>
+</body>
+</html>

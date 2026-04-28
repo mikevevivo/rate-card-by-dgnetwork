@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>Rate Card by DG Network</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f4f4;
+      color: #111;
+      min-height: 100vh;
+    }
+    body.loading { visibility: hidden; }
+
+    /* ── top nav ── */
+    nav {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo { display: flex; align-items: center; height: 34px; }
+    .logo img { height: 34px; width: auto; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-user  { font-size: 12px; color: #aaa; }
+    .btn-admin {
+      font-size: 12px; color: #fff; background: #CC0000;
+      border: 1px solid #CC0000; border-radius: 6px;
+      padding: 5px 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .btn-admin:hover { background: #aa0000; border-color: #aa0000; }
+    .btn-signout {
+      font-size: 12px; color: #ccc; background: transparent;
+      border: 1px solid #444; border-radius: 6px;
+      padding: 5px 12px; cursor: pointer;
+    }
+    .btn-signout:hover { border-color: #aaa; color: #fff; }
+
+    /* ── page layout ── */
+    .page { max-width: 1400px; margin: 0 auto; padding: 28px clamp(14px, 2.4vw, 28px) 60px; }
+
+    /* ── section ── */
+    .sec { margin-bottom: 28px; }
+    .sec-label {
+      font-size: 11px; font-weight: 600; color: #888;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid #e4e4e4;
+    }
+
+    /* ── page header ── */
+    .page-hdr { margin-bottom: 28px; }
+    .page-hdr h1 { font-size: 20px; font-weight: 600; color: #111; margin-bottom: 4px; }
+    .page-hdr p  { font-size: 13px; color: #888; }
+
+    /* ── controls ── */
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .ctrl  { display: flex; flex-direction: column; gap: 5px; }
+    .ctrl label { font-size: 12px; color: #666; }
+    select, input[type=range] { width: 100%; }
+    select {
+      padding: 9px 10px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: 13px; color: #111; background: #fff;
+      outline: none;
+    }
+    select:focus { border-color: #CC0000; }
+    .ctrl-row { display: flex; align-items: center; gap: 10px; }
+    .ctrl-row input[type=range] { flex: 1; accent-color: #CC0000; }
+    .ctrl-val { font-size: 13px; font-weight: 600; min-width: 52px; text-align: right; color: #111; }
+
+    /* ── metric cards ── */
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)); gap: 10px; }
+    .met {
+      background: #fff; border-radius: 10px;
+      border: 1px solid #e8e8e8; padding: 14px 16px;
+    }
+    .met .ml { font-size: 11px; color: #888; margin-bottom: 5px; line-height: 1.4; }
+    .met .mv { font-size: 18px; font-weight: 600; color: #111; }
+    .met .ms { font-size: 10px; color: #aaa; margin-top: 3px; }
+    .met.hi { border-color: #185FA5; }
+    .met.hi .mv { color: #185FA5; }
+    .met.grn { border-color: #1D9E75; }
+    .met.grn .mv { color: #1D9E75; }
+
+    /* ── money flow ── */
+    .flow { display: flex; align-items: stretch; flex-wrap: wrap; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8e8; }
+    .fb { background: #fafafa; border-right: 1px solid #e8e8e8; padding: 10px 12px; text-align: center; flex: 1; min-width: 90px; }
+    .fb:last-child { border-right: none; }
+    .fb .fbl { font-size: 10px; color: #999; margin-bottom: 4px; }
+    .fb .fbv { font-size: 13px; font-weight: 600; color: #111; }
+    .fb.fb-mo  .fbv { color: #185FA5; }
+    .fb.fb-mo  { border-top: 2px solid #185FA5; }
+    .fb.fb-bonus .fbv { color: #1D9E75; }
+    .fb.fb-bonus { border-top: 2px solid #1D9E75; }
+    .fa { display: flex; align-items: center; font-size: 13px; color: #bbb; padding: 0; background: #fafafa; border-right: 1px solid #e8e8e8; }
+
+    /* ── bonus box ── */
+    .bonus-box {
+      background: #EAF3DE; border-radius: 10px;
+      border: 1px solid #97C459; padding: 16px 18px;
+    }
+    .bonus-box .bt { font-size: 13px; font-weight: 600; color: #3B6D11; margin-bottom: 8px; }
+    .bonus-box .br { font-size: 12px; color: #3B6D11; line-height: 1.8; }
+    .bonus-box .bc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .bonus-chip {
+      background: #fff; border: 1px solid #97C459;
+      border-radius: 6px; padding: 5px 12px;
+      font-size: 11px; color: #3B6D11; font-weight: 500;
+    }
+    .no-bonus {
+      background: #f9f9f9; border: 1px solid #e8e8e8;
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 12px; color: #aaa;
+    }
+
+    /* ── note ── */
+    .note {
+      font-size: 11px; color: #888; line-height: 1.8;
+      padding: 12px 16px; background: #f9f9f9;
+      border-radius: 8px; border: 1px solid #ebebeb;
+    }
+
+    /* ── warn ── */
+    .warn {
+      font-size: 12px; padding: 9px 14px; border-radius: 8px;
+      background: #FAEEDA; color: #854F0B;
+      border: 1px solid #EF9F27; margin-top: 10px; display: none;
+    }
+
+    /* ── rate card table ── */
+    .tog-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tog {
+      padding: 5px 13px; border-radius: 6px;
+      border: 1px solid #ddd; font-size: 12px;
+      cursor: pointer; background: #fff; color: #444;
+      transition: all 0.12s;
+    }
+    .tog:hover { border-color: #aaa; }
+    .tog.active { background: #CC0000; color: #fff; border-color: #CC0000; font-weight: 500; }
+    .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e8e8e8; }
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+    .tbl th {
+      background: #f5f5f5; font-weight: 600; padding: 8px 6px;
+      text-align: right; border-bottom: 1px solid #e8e8e8;
+      border-right: 1px solid #e8e8e8; color: #666; font-size: 11px;
+    }
+    .tbl th:first-child { text-align: left; width: 74px; border-left: none; }
+    .tbl td {
+      padding: 6px 6px; border-bottom: 1px solid #f0f0f0;
+      border-right: 1px solid #f0f0f0; text-align: right; font-size: 11px; color: #333;
+    }
+    .tbl td:first-child { text-align: left; font-weight: 600; color: #666; background: #fafafa; }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl tr.hl td { background: #E6F1FB; color: #0C447C; font-weight: 600; }
+    .tbl tr.hl td:first-child { background: #dce9f7; color: #0C447C; }
+    .tbl td.sel { outline: 2px solid #CC0000; outline-offset: -2px; }
+
+    /* ── rules ── */
+    .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .rule-card {
+      background: #fff; border: 1px solid #e8e8e8;
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .rule-card .rc-title { font-size: 12px; font-weight: 600; color: #111; margin-bottom: 7px; }
+    .rule-card .rc-body  { font-size: 11px; color: #777; line-height: 1.7; }
+
+    .divider { border: none; border-top: 1px solid #ebebeb; margin: 28px 0; }
+
+    .footer { font-size: 11px; color: #bbb; text-align: center; margin-top: 40px; }
+  </style>
+</head>
+<body class="loading">
+
+  <nav>
+    <div class="logo">
+      <img src="/assets/dg-network-logo.png" alt="DG Network">
+    </div>
+    <div class="nav-right">
+      <span class="nav-user" id="navUser"></span>
+      <a class="btn-admin" id="lnkAdmin" href="admin.html" style="display:none;">Admin</a>
+      <button class="btn-signout" id="btnSignOut">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-hdr">
+      <h1>ESSO DOOH rate card</h1>
+      <p>35 digital LED displays &middot; nationwide &middot; list price &euro;250 / display / month &middot; <span id="pageDate"></span></p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Campaign parameters</div>
+      <div class="grid2">
+        <div class="ctrl">
+          <label>Package (paid displays)</label>
+          <select id="selPkg">
+            <option value="5">5 displays</option>
+            <option value="10">10 displays</option>
+            <option value="15">15 displays</option>
+            <option value="20" selected>20 displays</option>
+            <option value="25">25 displays</option>
+            <option value="30">30 displays</option>
+            <option value="35">35 &mdash; full network</option>
+          </select>
+        </div>
+        <div class="ctrl">
+          <label>Campaign duration (months)</label>
+          <select id="selMo">
+            <option value="1">1 month</option>
+            <option value="2">2 months</option>
+            <option value="3">3 months</option>
+            <option value="4">4 months</option>
+            <option value="5">5 months</option>
+            <option value="6" selected>6 months</option>
+            <option value="7">7 months</option>
+            <option value="8">8 months</option>
+            <option value="9">9 months</option>
+            <option value="10">10 months</option>
+            <option value="11">11 months</option>
+            <option value="12">12 months</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Commission settings</div>
+      <div class="grid2">
+        <div class="ctrl">
+          <label>Agency commission (0&ndash;25%)</label>
+          <div class="ctrl-row">
+            <input type="range" id="agSlider" min="0" max="25" step="1" value="20">
+            <span class="ctrl-val" id="agVal">20%</span>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label>Associate commission (0&ndash;25%)</label>
+          <div class="ctrl-row">
+            <input type="range" id="asSlider" min="0" max="25" step="1" value="0">
+            <span class="ctrl-val" id="asVal">0% (none)</span>
+          </div>
+        </div>
+      </div>
+      <div class="warn" id="warnMsg"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Deal summary</div>
+      <div class="metrics" id="metricsRow"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Money flow</div>
+      <div class="flow" id="flowRow"></div>
+    </div>
+
+    <div class="sec" id="bonusSection"></div>
+
+    <div class="note" id="noteRow"></div>
+
+    <hr class="divider">
+
+    <div class="sec">
+      <div class="sec-label">Rate card</div>
+      <div class="tog-row" id="togRow">
+        <button class="tog active" data-mode="net">Net price (&euro;/unit/mo)</button>
+        <button class="tog" data-mode="total">Total campaign (&euro;)</button>
+        <button class="tog" data-mode="morev">Media owner revenue (&euro;)</button>
+        <button class="tog" data-mode="disc">Discount %</button>
+        <button class="tog" data-mode="credits">Bonus credits (display-months)</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl" id="mainTable"></table>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="sec">
+      <div class="sec-label">Scheme rules</div>
+      <div class="rules-grid">
+        <div class="rule-card">
+          <div class="rc-title">Discount method</div>
+          <div class="rc-body">Compounding — volume and duration discounts stack multiplicatively. Max discount (35 units &times; 12 months) = 43.75%.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rc-title">Bonus credits</div>
+          <div class="rc-body">Awarded in display-months. No commissions apply on bonus credits. Minimum redemption: 5 display-months per booking.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rc-title">Credit redemption</div>
+          <div class="rc-body">Flexible — redeem in any combination within 6 months post-campaign end. Non-transferable. Cannot be combined with any other discount or promotion.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rc-title">Commissions</div>
+          <div class="rc-body">Agency and associate commissions apply on the net discounted campaign value only. Bonus display-months are excluded from all commission calculations.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">DGNetwork &mdash; ESSO DOOH &mdash; confidential rate card &mdash; not for further distribution</div>
+
+  </div>
+
+  <script src="js/config.js"></script>
+  <script type="module">
+    import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+                                 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const ADMIN_EMAILS = new Set(["mike@vevivo.com", "tony@dgnetwork.eu"]);
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase())) {
+        signOut(auth).then(() => window.location.href = "index.html");
+        return;
+      }
+      document.getElementById("navUser").textContent = user.email;
+      if (ADMIN_EMAILS.has(user.email.toLowerCase())) {
+        document.getElementById("lnkAdmin").style.display = "";
+      }
+      document.body.classList.remove("loading");
+      initTool();
+    });
+
+    document.getElementById("btnSignOut").addEventListener("click", () => {
+      signOut(auth).then(() => window.location.href = "index.html");
+    });
+
+    function initTool() {
+      const PKGS = [5,10,15,20,25,30,35];
+      const MOS  = [1,2,3,4,5,6,7,8,9,10,11,12];
+      const LIST = 250;
+      const VOL_D    = { 5:0, 10:0.05, 15:0.10, 20:0.15, 25:0.18, 30:0.22, 35:0.25 };
+      const DUR_D    = { 1:0, 2:0.03, 3:0.05, 4:0.07, 5:0.09, 6:0.12, 7:0.14, 8:0.16, 9:0.18, 10:0.20, 11:0.22, 12:0.25 };
+      const VOL_BONUS = { 5:0, 10:1, 15:2, 20:3, 25:4, 30:5, 35:6 };
+
+      function durBonusMo(mo) {
+        if (mo <= 2) return 0; if (mo <= 5) return 1;
+        if (mo <= 8) return 2; if (mo <= 11) return 3; return 4;
+      }
+      let mode = 'net';
+
+      function disc(p,m)     { return 1-(1-VOL_D[p])*(1-DUR_D[m]); }
+      function netPrice(p,m) { return LIST*(1-disc(p,m)); }
+      function totalNet(p,m) { return netPrice(p,m)*p*m; }
+      function bonusCr(p,m)  { return VOL_BONUS[p]*durBonusMo(m); }
+
+      function fmt(n)   { return '€'+Math.round(n).toLocaleString(); }
+      function fmtD(n)  { return '€'+n.toFixed(2); }
+      function fmtP(n)  { return (n*100).toFixed(2)+'%'; }
+      function fmtPr(n) { return Math.round(n*100)+'%'; }
+
+      function bonusCombos(cr) {
+        if (!cr) return [];
+        const seen=new Set(), out=[];
+        [[cr,1],[Math.floor(cr/2),2],[Math.floor(cr/3),3],[5,Math.floor(cr/5)]].forEach(([d,m])=>{
+          if(d>=5&&d<=35&&m>=1&&d*m===cr){const k=d+'x'+m;if(!seen.has(k)){seen.add(k);out.push({d,m});}}
+        });
+        return out.slice(0,4);
+      }
+
+      document.getElementById('pageDate').textContent =
+        new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+      function render() {
+        const pkg   = +document.getElementById('selPkg').value;
+        const mo    = +document.getElementById('selMo').value;
+        const agPct = +document.getElementById('agSlider').value/100;
+        const asPct = +document.getElementById('asSlider').value/100;
+
+        document.getElementById('agVal').textContent = Math.round(agPct*100)+'%';
+        document.getElementById('asVal').textContent = asPct===0?'0% (none)':Math.round(asPct*100)+'%';
+
+        const totC = agPct+asPct;
+        const wEl  = document.getElementById('warnMsg');
+        if      (totC>0.40){wEl.style.display='block';wEl.textContent='Warning: combined commissions ('+fmtPr(totC)+') exceed 40% — review deal viability.';}
+        else if (totC>0.30){wEl.style.display='block';wEl.textContent='Note: combined commissions are '+fmtPr(totC)+' — confirm margins are acceptable.';}
+        else                {wEl.style.display='none';}
+
+        const d       = disc(pkg,mo);
+        const np      = netPrice(pkg,mo);
+        const tv      = totalNet(pkg,mo);
+        const listTot = LIST*pkg*mo;
+        const agComm  = tv*agPct;
+        const asComm  = tv*asPct;
+        const moRev   = tv-agComm-asComm;
+        const cr      = bonusCr(pkg,mo);
+        const crVal   = cr*LIST;
+
+        document.getElementById('metricsRow').innerHTML=`
+          <div class="met"><div class="ml">Net price / display / month</div><div class="mv">${fmtD(np)}</div><div class="ms">List €250 &middot; ${fmtP(d)} off</div></div>
+          <div class="met"><div class="ml">Total campaign value</div><div class="mv">${fmt(tv)}</div><div class="ms">${pkg} displays &times; ${mo} months</div></div>
+          <div class="met"><div class="ml">Agency commission</div><div class="mv">${fmt(agComm)}</div><div class="ms">${fmtPr(agPct)} of ${fmt(tv)}</div></div>
+          ${asPct>0?`<div class="met"><div class="ml">Associate commission</div><div class="mv">${fmt(asComm)}</div><div class="ms">${fmtPr(asPct)} of ${fmt(tv)}</div></div>`:''}
+          <div class="met hi"><div class="ml">Media owner revenue</div><div class="mv">${fmt(moRev)}</div><div class="ms">After all commissions</div></div>
+          ${cr>0?`<div class="met grn"><div class="ml">Bonus credits awarded</div><div class="mv">${cr} display-months</div><div class="ms">Worth €${crVal.toLocaleString()} at list &middot; no commission</div></div>`:''}
+          <div class="met"><div class="ml">Client saving vs list</div><div class="mv">${fmt(listTot-tv)}</div><div class="ms">Discount only &middot; excl. bonus</div></div>
+        `;
+
+        const fi=[{l:'List total',v:fmt(listTot)},{l:fmtP(d)+' discount',v:fmt(tv)},{l:'Agency '+fmtPr(agPct),v:fmt(agComm)}];
+        if(asPct>0)fi.push({l:'Associate '+fmtPr(asPct),v:fmt(asComm)});
+        fi.push({l:'Media owner revenue',v:fmt(moRev),cls:'fb-mo'});
+        if(cr>0)fi.push({l:'Bonus credits',v:cr+' disp-mo',cls:'fb-bonus'});
+        document.getElementById('flowRow').innerHTML=fi.map((f,i)=>
+          (i>0?'<div class="fa">&nbsp;&rarr;&nbsp;</div>':'')+
+          `<div class="fb ${f.cls||''}"><div class="fbl">${f.l}</div><div class="fbv">${f.v}</div></div>`
+        ).join('');
+
+        if(cr>0){
+          const combos=bonusCombos(cr);
+          const chips=combos.map(c=>`<div class="bonus-chip">${c.d} displays &times; ${c.m} month${c.m>1?'s':''}</div>`).join('');
+          const bmo=durBonusMo(mo);
+          document.getElementById('bonusSection').innerHTML=`
+            <div class="sec-label">Bonus credits</div>
+            <div class="bonus-box">
+              <div class="bt">${cr} bonus display-months earned on this campaign</div>
+              <div class="br">${VOL_BONUS[pkg]} bonus display(s) from volume &times; ${bmo} bonus month(s) from duration = ${cr} display-months &middot; list value &euro;${crVal.toLocaleString()}<br>
+              Redeemable within <strong>6 months</strong> post-campaign end &middot; min <strong>5 display-months</strong> per redemption &middot; split bookings allowed &middot; no commission applies</div>
+              ${chips?`<div class="bc">${chips}</div>`:''}
+            </div>`;
+        } else {
+          document.getElementById('bonusSection').innerHTML=`
+            <div class="sec-label">Bonus credits</div>
+            <div class="no-bonus">No bonus credits on this combination. Credits are awarded from 10+ displays and 3+ month campaigns.</div>`;
+        }
+
+        document.getElementById('noteRow').innerHTML=
+          `<strong>Discount logic:</strong> vol ${fmtPr(VOL_D[pkg])} + dur ${fmtPr(DUR_D[mo])} &rarr; 1&minus;(1&minus;${VOL_D[pkg]})&times;(1&minus;${DUR_D[mo]}) = ${fmtP(d)} combined. `+
+          (asPct>0?`Agency ${fmt(agComm)} + associate ${fmt(asComm)} = ${fmt(agComm+asComm)} total commissions. `:`Agency earns ${fmt(agComm)}. `)+
+          `<strong>Media owner revenue: ${fmt(moRev)}.</strong>`;
+
+        const colHdr=MOS.map(m=>`<th>${m}mo</th>`).join('');
+        let rows='';
+        PKGS.forEach(p=>{
+          rows+=`<tr class="${p===pkg?'hl':''}"><td>${p} units</td>`;
+          MOS.forEach(m=>{
+            const sel=p===pkg&&m===mo;
+            const tv2=totalNet(p,m),np2=netPrice(p,m),d2=disc(p,m),cr2=bonusCr(p,m);
+            let val;
+            if     (mode==='net')    val='€'+np2.toFixed(2);
+            else if(mode==='total')  val=fmt(tv2);
+            else if(mode==='morev')  val=fmt(tv2*(1-agPct-asPct));
+            else if(mode==='disc')   val=fmtP(d2);
+            else                     val=cr2>0?cr2+' dm':'—';
+            rows+=`<td class="${sel?'sel':''}">${val}</td>`;
+          });
+          rows+='</tr>';
+        });
+        document.getElementById('mainTable').innerHTML=
+          `<thead><tr><th>Package</th>${colHdr}</tr></thead><tbody>${rows}</tbody>`;
+      }
+
+      document.getElementById('selPkg').addEventListener('change',render);
+      document.getElementById('selMo').addEventListener('change',render);
+      document.getElementById('agSlider').addEventListener('input',render);
+      document.getElementById('asSlider').addEventListener('input',render);
+      document.getElementById('togRow').addEventListener('click',e=>{
+        const btn=e.target.closest('.tog'); if(!btn)return;
+        mode=btn.dataset.mode;
+        document.querySelectorAll('.tog').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active'); render();
+      });
+      render();
+    }
+
+  </script>
+</body>
+</html>

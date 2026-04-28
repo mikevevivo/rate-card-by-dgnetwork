@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>Admin — Rate Card by DG Network</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f4; color: #111; min-height: 100vh; }
+    body.loading { visibility: hidden; }
+    nav { background: #111; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; position: sticky; top: 0; z-index: 10; }
+    .logo { display: flex; align-items: center; height: 34px; }
+    .logo img { height: 34px; width: auto; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-user  { font-size: 12px; color: #aaa; }
+    .btn-link { font-size: 12px; color: #fff; background: transparent; border: 1px solid #444; border-radius: 6px; padding: 5px 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-link:hover { border-color: #aaa; color: #fff; }
+    .btn-signout { font-size: 12px; color: #ccc; background: transparent; border: 1px solid #444; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+    .btn-signout:hover { border-color: #aaa; color: #fff; }
+    .page { max-width: 1400px; margin: 0 auto; padding: 28px clamp(14px, 2.4vw, 28px) 60px; }
+    .page-hdr { margin-bottom: 18px; }
+    .page-hdr h1 { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 4px; }
+    .page-hdr p  { font-size: 13px; color: #888; }
+    .sec { margin-bottom: 18px; }
+    .sec-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e4e4e4; }
+    .rule-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 14px 16px; }
+    .rule-card .rc-title { font-size: 12px; font-weight: 600; color: #111; margin-bottom: 7px; }
+    .rule-card .rc-body  { font-size: 11px; color: #777; line-height: 1.7; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+    input[type=email] { flex:1; min-width:220px; padding:9px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; color:#111; background:#fff; outline:none; }
+    input[type=email]:focus { border-color: #CC0000; }
+    .btn-invite { font-size: 12px; color: #CC0000; background: transparent; border: 1px solid #CC0000; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+    .btn-invite:hover { background: rgba(204,0,0,0.06); }
+    .btn-del { font-size: 12px; color: #fff; background: #111; border: 1px solid #111; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+    .btn-del:hover { background: #000; border-color: #000; }
+    .btn-del:disabled { opacity: 0.55; cursor: not-allowed; }
+    .msg { margin-top:10px; font-size:12px; color:#777; }
+    .tbl-wrap { overflow-x: auto; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 12px; background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; }
+    .tbl th { text-align:center; padding: 10px 8px; color:#888; font-weight:600; background:#fafafa; border-bottom: 1px solid #eee; white-space: nowrap; }
+    .tbl td { text-align:center; padding: 10px 8px; border-bottom: 1px solid #f1f1f1; white-space: nowrap; }
+    .tbl td:first-child, .tbl th:first-child { text-align:left; }
+  </style>
+</head>
+<body class="loading">
+  <nav>
+    <div class="logo">
+      <img src="/assets/dg-network-logo.png" alt="DG Network">
+    </div>
+    <div class="nav-right">
+      <span class="nav-user" id="navUser"></span>
+      <a class="btn-link" href="tool.html">Tool</a>
+      <button class="btn-signout" id="btnSignOut">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-hdr">
+      <h1>Admin</h1>
+      <p>User management for Rate Card by DG Network</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Invite User</div>
+      <div class="rule-card">
+        <div class="rc-title">Send invite email</div>
+        <div class="rc-body">
+          Enter an email address and an invite will be sent (password reset email).
+          <div class="row">
+            <input id="inviteEmail" type="email" placeholder="user@company.com" autocomplete="email">
+            <button class="btn-invite" id="btnInvite">Send invite</button>
+          </div>
+          <div class="msg" id="adminMsg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Users</div>
+      <div class="tbl-wrap">
+        <table class="tbl" id="usersTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const ADMIN_EMAILS = new Set(["mike@vevivo.com", "tony@dgnetwork.eu"]);
+    const ADMIN_API_BASE = "https://us-central1-rate-card-by-dgnetwork.cloudfunctions.net/adminApi";
+
+    const usersTable = document.getElementById("usersTable");
+    const inviteEmail = document.getElementById("inviteEmail");
+    const btnInvite = document.getElementById("btnInvite");
+    const adminMsg = document.getElementById("adminMsg");
+
+    function setMsg(msg, isError) {
+      adminMsg.textContent = msg || "";
+      adminMsg.style.color = isError ? "#cc0000" : "#777";
+    }
+
+    async function api(path, options) {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch(`${ADMIN_API_BASE}${path}`, {
+        ...(options || {}),
+        headers: {
+          ...(options && options.headers ? options.headers : {}),
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const text = await res.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : null; } catch (_) {}
+      if (!res.ok) {
+        const msg = (json && (json.message || json.error)) ? (json.message || json.error) : (text || `HTTP ${res.status}`);
+        throw new Error(msg);
+      }
+      return json;
+    }
+
+    function renderUsers(users) {
+      const hdr = `<thead><tr><th>Email</th><th>Verified</th><th>Disabled</th><th>Created</th><th>Last sign-in</th><th>Actions</th></tr></thead>`;
+      const rows = (users || []).map(u => {
+        const email = u.email || "(no email)";
+        const ver = u.emailVerified ? "Yes" : "No";
+        const dis = u.disabled ? "Yes" : "No";
+        const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "—";
+        const last = u.lastSignInAt ? new Date(u.lastSignInAt).toLocaleString() : "—";
+        const uid = u.uid || "";
+        const safeEmail = String(email).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return `<tr><td style="font-weight:600; color:#666; background:#fafafa;">${safeEmail}</td><td>${ver}</td><td>${dis}</td><td>${created}</td><td>${last}</td><td>${uid ? `<button class="btn-del" data-uid="${uid}">Delete</button>` : "—"}</td></tr>`;
+      }).join("");
+      usersTable.innerHTML = `${hdr}<tbody>${rows}</tbody>`;
+    }
+
+    async function loadUsers() {
+      setMsg("Loading users…", false);
+      const data = await api("/users", { method: "GET" });
+      renderUsers(data.users || []);
+      setMsg(`Loaded ${data.users ? data.users.length : 0} users.`, false);
+    }
+
+    usersTable.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-uid]");
+      if (!btn) return;
+      const uid = btn.getAttribute("data-uid");
+      if (!uid) return;
+      if (!confirm("Delete this user?")) return;
+      btn.disabled = true;
+      setMsg("Deleting user…", false);
+      try {
+        await api(`/users/${encodeURIComponent(uid)}`, { method: "DELETE" });
+        setMsg("User deleted.", false);
+        await loadUsers();
+      } catch (err) {
+        setMsg(String(err && err.message ? err.message : err), true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase())) {
+        signOut(auth).then(() => window.location.href = "index.html");
+        return;
+      }
+      if (!ADMIN_EMAILS.has(user.email.toLowerCase())) {
+        window.location.href = "tool.html";
+        return;
+      }
+      document.getElementById("navUser").textContent = user.email;
+      document.body.classList.remove("loading");
+      loadUsers().catch(e => setMsg(String(e && e.message ? e.message : e), true));
+    });
+
+    document.getElementById("btnSignOut").addEventListener("click", () => {
+      signOut(auth).then(() => window.location.href = "index.html");
+    });
+
+    btnInvite.addEventListener("click", async () => {
+      const email = inviteEmail.value.trim();
+      if (!email) { setMsg("Enter an email address first.", true); return; }
+      btnInvite.disabled = true;
+      setMsg("Sending invite…", false);
+      try {
+        const data = await api("/invite", { method: "POST", body: JSON.stringify({ email }) });
+        setMsg(`Invite sent to ${data.email}.`, false);
+        inviteEmail.value = "";
+        await loadUsers();
+      } catch (e) {
+        setMsg(String(e && e.message ? e.message : e), true);
+      } finally {
+        btnInvite.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
