@@ -2,84 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <title>Rate Card by DG Network</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-text-size-adjust: 100%; }
-    body {
+    html {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f4f4f4;
-      color: #111;
-      min-height: 100vh;
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
     }
+    body { background: #f2f2f2; color: #111; min-height: 100vh; }
     body.loading { visibility: hidden; }
 
-    /* ── top nav ── */
     nav {
-      background: #111;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      height: 56px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      background: #111; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 16px;
+      height: 52px; position: sticky; top: 0; z-index: 100;
     }
-    .logo { display: flex; align-items: center; height: 34px; }
-    .logo img { height: 34px; width: auto; display: block; }
-    .nav-right { display: flex; align-items: center; gap: 16px; }
-    .nav-user  { font-size: 12px; color: #aaa; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .logo { display: flex; align-items: stretch; height: 32px; border-radius: 3px; overflow: hidden; }
+    .logo-dg {
+      background: #CC0000; display: flex; align-items: center;
+      justify-content: center; width: 44px; flex-shrink: 0;
+    }
+    .logo-dg span  { color: #fff; font-size: 15px; font-weight: 700; }
+    .logo-net { background: #222; display: flex; align-items: center; padding: 0 10px; }
+    .logo-net span { color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-user { font-size: 11px; color: #888; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-admin {
       font-size: 12px; color: #fff; background: #CC0000;
       border: 1px solid #CC0000; border-radius: 6px;
-      padding: 5px 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+      padding: 5px 10px; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn-admin:hover { background: #aa0000; border-color: #aa0000; }
+    .btn-admin:active { background: #aa0000; border-color: #aa0000; }
     .btn-signout {
       font-size: 12px; color: #ccc; background: transparent;
       border: 1px solid #444; border-radius: 6px;
-      padding: 5px 12px; cursor: pointer;
+      padding: 5px 10px; cursor: pointer; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn-signout:hover { border-color: #aaa; color: #fff; }
+    .btn-signout:active { border-color: #aaa; }
 
-    /* ── page layout ── */
-    .page { max-width: 1400px; margin: 0 auto; padding: 28px clamp(14px, 2.4vw, 28px) 60px; }
+    .page { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
 
-    /* ── section ── */
-    .sec { margin-bottom: 28px; }
+    .page-hdr { margin-bottom: 20px; }
+    .page-hdr h1 { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 3px; }
+    .page-hdr p  { font-size: 12px; color: #999; line-height: 1.5; }
+
+    .sec { margin-bottom: 22px; }
     .sec-label {
-      font-size: 11px; font-weight: 600; color: #888;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 12px; padding-bottom: 8px;
+      font-size: 10px; font-weight: 700; color: #999;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      margin-bottom: 10px; padding-bottom: 7px;
       border-bottom: 1px solid #e4e4e4;
     }
 
-    /* ── page header ── */
-    .page-hdr { margin-bottom: 28px; }
-    .page-hdr h1 { font-size: 20px; font-weight: 600; color: #111; margin-bottom: 4px; }
-    .page-hdr p  { font-size: 13px; color: #888; }
+    .city-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .city-btn {
+      background: #fff; border: 1px solid #ddd; border-radius: 10px;
+      padding: 10px 10px 8px; cursor: pointer; text-align: left;
+      -webkit-tap-highlight-color: transparent; transition: all 0.12s;
+      position: relative; overflow: hidden;
+    }
+    .city-btn:active { transform: scale(0.97); }
+    .city-btn.active {
+      border-color: #CC0000; background: #fff5f5;
+      box-shadow: 0 0 0 2px rgba(204,0,0,0.15);
+    }
+    .city-btn.active-multi {
+      border-color: #185FA5; background: #f0f6ff;
+      box-shadow: 0 0 0 2px rgba(24,95,165,0.15);
+    }
+    .city-btn .cb-name { font-size: 12px; font-weight: 700; color: #111; margin-bottom: 2px; }
+    .city-btn .cb-count { font-size: 11px; color: #999; }
 
-    /* ── controls ── */
-    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
-    .ctrl  { display: flex; flex-direction: column; gap: 5px; }
-    .ctrl label { font-size: 12px; color: #666; }
-    select, input[type=range] { width: 100%; }
+    .display-input-wrap { display: flex; align-items: center; gap: 10px; }
+    .display-number-input {
+      width: 80px; padding: 11px 10px; border: 1px solid #ddd;
+      border-radius: 10px; font-size: 18px; font-weight: 700;
+      color: #CC0000; text-align: center; outline: none;
+      -webkit-appearance: none; appearance: none;
+    }
+    .display-number-input:focus { border-color: #CC0000; }
+    .display-stepper { display: flex; gap: 6px; }
+    .step-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 1px solid #ddd; background: #fff; font-size: 20px;
+      color: #444; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; -webkit-tap-highlight-color: transparent;
+      font-weight: 300; line-height: 1;
+    }
+    .step-btn:active { background: #f0f0f0; }
+    .display-hint {
+      font-size: 11px; color: #aaa; margin-top: 6px; line-height: 1.5;
+    }
+    .display-hint span { color: #CC0000; font-weight: 600; }
+    .tier-badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 6px; margin-top: 6px;
+    }
+    .tier-badge.vol0  { background: #f0f0f0; color: #888; }
+    .tier-badge.vol5  { background: #EAF3DE; color: #3B6D11; }
+    .tier-badge.vol10 { background: #dff0ea; color: #1D6B50; }
+    .tier-badge.vol15 { background: #dceefb; color: #0C5A9E; }
+    .tier-badge.vol18 { background: #d8e8ff; color: #1040A0; }
+    .tier-badge.vol22 { background: #e8d8ff; color: #5020A0; }
+    .tier-badge.vol25 { background: #fff0d8; color: #A05010; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+    .ctrl { display: flex; flex-direction: column; gap: 5px; }
+    .ctrl label { font-size: 12px; color: #666; font-weight: 500; }
     select {
-      padding: 9px 10px; border: 1px solid #ddd; border-radius: 8px;
-      font-size: 13px; color: #111; background: #fff;
-      outline: none;
+      width: 100%; padding: 11px 10px; border: 1px solid #ddd;
+      border-radius: 10px; font-size: 15px; color: #111; background: #fff;
+      -webkit-appearance: none; appearance: none; outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
     }
     select:focus { border-color: #CC0000; }
     .ctrl-row { display: flex; align-items: center; gap: 10px; }
-    .ctrl-row input[type=range] { flex: 1; accent-color: #CC0000; }
-    .ctrl-val { font-size: 13px; font-weight: 600; min-width: 52px; text-align: right; color: #111; }
+    .ctrl-row input[type=range] { flex: 1; accent-color: #CC0000; height: 24px; }
+    .ctrl-val { font-size: 14px; font-weight: 700; min-width: 52px; text-align: right; color: #111; }
 
-    /* ── metric cards ── */
+    .warn {
+      font-size: 12px; padding: 10px 14px; border-radius: 8px;
+      background: #FAEEDA; color: #854F0B; border: 1px solid #EF9F27;
+      margin-top: 10px; display: none; line-height: 1.5;
+    }
+
     .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)); gap: 10px; }
     .met {
       background: #fff; border-radius: 10px;
@@ -93,9 +156,9 @@
     .met.grn { border-color: #1D9E75; }
     .met.grn .mv { color: #1D9E75; }
 
-    /* ── money flow ── */
-    .flow { display: flex; align-items: stretch; flex-wrap: wrap; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8e8; }
-    .fb { background: #fafafa; border-right: 1px solid #e8e8e8; padding: 10px 12px; text-align: center; flex: 1; min-width: 90px; }
+    .flow-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .flow { display: flex; align-items: stretch; min-width: max-content; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8e8; }
+    .fb { background: #fafafa; border-right: 1px solid #e8e8e8; padding: 10px 14px; text-align: center; min-width: 90px; }
     .fb:last-child { border-right: none; }
     .fb .fbl { font-size: 10px; color: #999; margin-bottom: 4px; }
     .fb .fbv { font-size: 13px; font-weight: 600; color: #111; }
@@ -103,9 +166,8 @@
     .fb.fb-mo  { border-top: 2px solid #185FA5; }
     .fb.fb-bonus .fbv { color: #1D9E75; }
     .fb.fb-bonus { border-top: 2px solid #1D9E75; }
-    .fa { display: flex; align-items: center; font-size: 13px; color: #bbb; padding: 0; background: #fafafa; border-right: 1px solid #e8e8e8; }
+    .fa { display: flex; align-items: center; font-size: 12px; color: #ccc; padding: 0 4px; background: #fafafa; border-right: 1px solid #e8e8e8; }
 
-    /* ── bonus box ── */
     .bonus-box {
       background: #EAF3DE; border-radius: 10px;
       border: 1px solid #97C459; padding: 16px 18px;
@@ -124,42 +186,37 @@
       font-size: 12px; color: #aaa;
     }
 
-    /* ── note ── */
     .note {
       font-size: 11px; color: #888; line-height: 1.8;
       padding: 12px 16px; background: #f9f9f9;
       border-radius: 8px; border: 1px solid #ebebeb;
     }
 
-    /* ── warn ── */
-    .warn {
-      font-size: 12px; padding: 9px 14px; border-radius: 8px;
-      background: #FAEEDA; color: #854F0B;
-      border: 1px solid #EF9F27; margin-top: 10px; display: none;
+    .tog-row {
+      display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; padding-bottom: 8px;
+      margin-bottom: 10px; scrollbar-width: none;
     }
-
-    /* ── rate card table ── */
-    .tog-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tog-row::-webkit-scrollbar { display: none; }
     .tog {
-      padding: 5px 13px; border-radius: 6px;
-      border: 1px solid #ddd; font-size: 12px;
-      cursor: pointer; background: #fff; color: #444;
-      transition: all 0.12s;
+      padding: 7px 13px; border-radius: 20px; border: 1px solid #ddd;
+      font-size: 12px; cursor: pointer; background: #fff; color: #555;
+      white-space: nowrap; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent; transition: all 0.12s;
     }
-    .tog:hover { border-color: #aaa; }
     .tog.active { background: #CC0000; color: #fff; border-color: #CC0000; font-weight: 500; }
-    .tbl-wrap { overflow-x: auto; overflow-y: hidden; border-radius: 8px; border: 1px solid #e8e8e8; overscroll-behavior-x: contain; touch-action: pan-x; }
-    table.tbl { width: 100%; min-width: 1040px; border-collapse: collapse; font-size: 11px; table-layout: auto; }
+    .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid #e8e8e8; }
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; min-width: 560px; }
     .tbl th {
       background: #f5f5f5; font-weight: 600; padding: 8px 6px;
       text-align: right; border-bottom: 1px solid #e8e8e8;
-      border-right: 1px solid #e8e8e8; color: #666; font-size: 11px;
+      border-right: 1px solid #eee; color: #777; font-size: 10px; white-space: nowrap;
     }
-    .tbl th:first-child { text-align: left; width: 74px; border-left: none; }
-    .tbl th, .tbl td { white-space: nowrap; }
+    .tbl th:first-child { text-align: left; width: 60px; }
     .tbl td {
       padding: 6px 6px; border-bottom: 1px solid #f0f0f0;
-      border-right: 1px solid #f0f0f0; text-align: right; font-size: 11px; color: #333; font-variant-numeric: tabular-nums;
+      border-right: 1px solid #f0f0f0; text-align: right;
+      font-size: 11px; color: #333; white-space: nowrap;
     }
     .tbl td:first-child { text-align: left; font-weight: 600; color: #666; background: #fafafa; }
     .tbl tr:last-child td { border-bottom: none; }
@@ -167,8 +224,8 @@
     .tbl tr.hl td:first-child { background: #dce9f7; color: #0C447C; }
     .tbl td.sel { outline: 2px solid #CC0000; outline-offset: -2px; }
 
-    /* ── rules ── */
-    .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .rules-grid { grid-template-columns: 1fr; } }
     .rule-card {
       background: #fff; border: 1px solid #e8e8e8;
       border-radius: 10px; padding: 14px 16px;
@@ -176,51 +233,17 @@
     .rule-card .rc-title { font-size: 12px; font-weight: 600; color: #111; margin-bottom: 7px; }
     .rule-card .rc-body  { font-size: 11px; color: #777; line-height: 1.7; }
 
-    .divider { border: none; border-top: 1px solid #ebebeb; margin: 28px 0; }
+    .divider { border: none; border-top: 1px solid #e8e8e8; margin: 24px 0; }
 
-    .footer { font-size: 11px; color: #bbb; text-align: center; margin-top: 40px; }
-
-    @media (max-width: 768px) {
-      nav { padding: 10px 12px; height: auto; flex-wrap: wrap; gap: 10px; }
-      .logo img { height: 30px; }
-      .nav-right { width: 100%; justify-content: space-between; gap: 10px; }
-      .nav-user { max-width: 60vw; }
-      .page { padding: 18px 12px 56px; }
-      .page-hdr h1 { font-size: 18px; }
-      .page-hdr p { line-height: 1.6; }
-
-      .grid2 { grid-template-columns: 1fr; }
-
-      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .met { padding: 12px 12px; }
-      .met .mv { font-size: 16px; }
-
-      .flow { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .fb { min-width: 140px; }
-      .fa { flex: 0 0 auto; }
-
-      .tog-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-      .tog { flex: 0 0 auto; }
-
-      .tbl-wrap { -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
-      table.tbl { min-width: 1180px; }
-    }
-
-    @media (max-width: 420px) {
-      .metrics { grid-template-columns: 1fr; }
-      .fb { min-width: 160px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * { scroll-behavior: auto; transition: none !important; }
-    }
+    .footer { font-size: 11px; color: #ccc; text-align: center; margin-top: 32px; padding-bottom: 20px; }
   </style>
 </head>
 <body class="loading">
 
   <nav>
     <div class="logo">
-      <img src="/assets/dg-network-logo.png" alt="DG Network">
+      <div class="logo-dg"><span>DG</span></div>
+      <div class="logo-net"><span>NETWORK</span></div>
     </div>
     <div class="nav-right">
       <span class="nav-user" id="navUser"></span>
@@ -238,36 +261,44 @@
 
     <div class="sec">
       <div class="sec-label">Campaign parameters</div>
-      <div class="grid2">
-        <div class="ctrl">
-          <label>Package (paid displays)</label>
-          <select id="selPkg">
-            <option value="5">5 displays</option>
-            <option value="10">10 displays</option>
-            <option value="15">15 displays</option>
-            <option value="20" selected>20 displays</option>
-            <option value="25">25 displays</option>
-            <option value="30">30 displays</option>
-            <option value="35">35 &mdash; full network</option>
-          </select>
+      <div class="sec-label" style="font-size:10px; color:#bbb; border:none; margin-bottom:8px; padding-bottom:0; text-transform:none; letter-spacing:0;">
+        Quick-select by city or combination
+      </div>
+      <div class="city-grid" id="cityGrid"></div>
+
+      <div style="background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:14px 16px; margin-bottom:14px;">
+        <div style="font-size:12px; font-weight:600; color:#555; margin-bottom:10px;">Number of displays</div>
+        <div class="display-input-wrap">
+          <div class="display-stepper">
+            <button class="step-btn" id="stepDown" type="button">−</button>
+            <input type="number" id="displayInput" class="display-number-input"
+                   min="1" max="35" value="20" inputmode="numeric">
+            <button class="step-btn" id="stepUp" type="button">+</button>
+          </div>
+          <div style="flex:1;">
+            <div class="display-hint">Enter any number from 1–35. Discount applies at tier: <span id="tierDisplay">20 units</span></div>
+            <div id="tierBadge" class="tier-badge vol15">15% volume discount</div>
+          </div>
         </div>
-        <div class="ctrl">
-          <label>Campaign duration (months)</label>
-          <select id="selMo">
-            <option value="1">1 month</option>
-            <option value="2">2 months</option>
-            <option value="3">3 months</option>
-            <option value="4">4 months</option>
-            <option value="5">5 months</option>
-            <option value="6" selected>6 months</option>
-            <option value="7">7 months</option>
-            <option value="8">8 months</option>
-            <option value="9">9 months</option>
-            <option value="10">10 months</option>
-            <option value="11">11 months</option>
-            <option value="12">12 months</option>
-          </select>
-        </div>
+        <div class="display-hint" style="margin-top:8px;" id="nextTierHint"></div>
+      </div>
+
+      <div class="ctrl">
+        <label>Campaign duration (months)</label>
+        <select id="selMo">
+          <option value="1">1 month</option>
+          <option value="2">2 months</option>
+          <option value="3">3 months</option>
+          <option value="4">4 months</option>
+          <option value="5">5 months</option>
+          <option value="6" selected>6 months</option>
+          <option value="7">7 months</option>
+          <option value="8">8 months</option>
+          <option value="9">9 months</option>
+          <option value="10">10 months</option>
+          <option value="11">11 months</option>
+          <option value="12">12 months</option>
+        </select>
       </div>
     </div>
 
@@ -299,7 +330,7 @@
 
     <div class="sec">
       <div class="sec-label">Money flow</div>
-      <div class="flow" id="flowRow"></div>
+      <div class="flow-wrap"><div class="flow" id="flowRow"></div></div>
     </div>
 
     <div class="sec" id="bonusSection"></div>
@@ -315,7 +346,7 @@
         <button class="tog" data-mode="total">Total campaign (&euro;)</button>
         <button class="tog" data-mode="morev">Media owner revenue (&euro;)</button>
         <button class="tog" data-mode="disc">Discount %</button>
-        <button class="tog" data-mode="credits">Bonus credits (display-months)</button>
+        <button class="tog" data-mode="credits">Bonus credits</button>
       </div>
       <div class="tbl-wrap">
         <table class="tbl" id="mainTable"></table>
@@ -329,7 +360,7 @@
       <div class="rules-grid">
         <div class="rule-card">
           <div class="rc-title">Discount method</div>
-          <div class="rc-body">Compounding — volume and duration discounts stack multiplicatively. Max discount (35 units &times; 12 months) = 43.75%.</div>
+          <div class="rc-body">Compounding — volume and duration discounts stack multiplicatively. Discounts apply at tier thresholds (5, 10, 15, 20, 25, 30, 35 units). Max discount = 43.75%.</div>
         </div>
         <div class="rule-card">
           <div class="rc-title">Bonus credits</div>
@@ -382,69 +413,188 @@
     });
 
     function initTool() {
-      const PKGS = [5,10,15,20,25,30,35];
-      const MOS  = [1,2,3,4,5,6,7,8,9,10,11,12];
-      const LIST = 250;
-      const VOL_D    = { 5:0, 10:0.05, 15:0.10, 20:0.15, 25:0.18, 30:0.22, 35:0.25 };
-      const DUR_D    = { 1:0, 2:0.03, 3:0.05, 4:0.07, 5:0.09, 6:0.12, 7:0.14, 8:0.16, 9:0.18, 10:0.20, 11:0.22, 12:0.25 };
-      const VOL_BONUS = { 5:0, 10:1, 15:2, 20:3, 25:4, 30:5, 35:6 };
+      const MOS       = [1,2,3,4,5,6,7,8,9,10,11,12];
+      const LIST      = 250;
+      const TIERS     = [5,10,15,20,25,30,35];
+      const VOL_D     = {5:0,10:0.05,15:0.10,20:0.15,25:0.18,30:0.22,35:0.25};
+      const DUR_D     = {1:0,2:0.03,3:0.05,4:0.07,5:0.09,6:0.12,7:0.14,8:0.16,9:0.18,10:0.20,11:0.22,12:0.25};
+      const VOL_BONUS = {5:0,10:1,15:2,20:3,25:4,30:5,35:6};
+
+      const CITIES = [
+        { id:'nic',   name:'Nicosia',           count:14, multi:false },
+        { id:'lim',   name:'Limassol',          count:12, multi:false },
+        { id:'paf',   name:'Paphos',            count:3,  multi:false },
+        { id:'lar',   name:'Larnaca',           count:3,  multi:false },
+        { id:'fam',   name:'Famagusta',         count:3,  multi:false },
+        { id:'nicl',  name:'Nicosia + Limassol',count:26, multi:true  },
+        { id:'all',   name:'Full Network',      count:35, multi:true  },
+      ];
+
+      const TIER_META = {
+        0:  { cls:'vol0',  label:'No volume discount' },
+        5:  { cls:'vol5',  label:'5% volume discount' },
+        10: { cls:'vol10', label:'10% volume discount' },
+        15: { cls:'vol15', label:'15% volume discount' },
+        18: { cls:'vol18', label:'18% volume discount' },
+        22: { cls:'vol22', label:'22% volume discount' },
+        25: { cls:'vol25', label:'25% volume discount' },
+      };
+
+      let displays   = 20;
+      let activeCity = null;
+      let mode       = 'net';
+
+      function snapTier(n) {
+        let tier = 0;
+        for (const t of TIERS) { if (n >= t) tier = t; }
+        return tier;
+      }
+      function volDisc(n)       { const t = snapTier(n); return t > 0 ? VOL_D[t] : 0; }
+      function volBonusUnits(n) { const t = snapTier(n); return t > 0 ? VOL_BONUS[t] : 0; }
 
       function durBonusMo(mo) {
-        if (mo <= 2) return 0; if (mo <= 5) return 1;
-        if (mo <= 8) return 2; if (mo <= 11) return 3; return 4;
+        if (mo <= 2) return 0;
+        if (mo <= 5) return 1;
+        if (mo <= 8) return 2;
+        if (mo <= 11) return 3;
+        return 4;
       }
-      let mode = 'net';
+      function disc(n, mo)     { return 1 - (1 - volDisc(n)) * (1 - DUR_D[mo]); }
+      function netPrice(n, mo) { return LIST * (1 - disc(n, mo)); }
+      function totalNet(n, mo) { return netPrice(n, mo) * n * mo; }
+      function bonusCr(n, mo)  { return volBonusUnits(n) * durBonusMo(mo); }
 
-      function disc(p,m)     { return 1-(1-VOL_D[p])*(1-DUR_D[m]); }
-      function netPrice(p,m) { return LIST*(1-disc(p,m)); }
-      function totalNet(p,m) { return netPrice(p,m)*p*m; }
-      function bonusCr(p,m)  { return VOL_BONUS[p]*durBonusMo(m); }
+      function discT(t, mo)     { return 1 - (1 - VOL_D[t]) * (1 - DUR_D[mo]); }
+      function netPriceT(t, mo) { return LIST * (1 - discT(t, mo)); }
+      function totalNetT(t, mo) { return netPriceT(t, mo) * t * mo; }
+      function bonusCrT(t, mo)  { return VOL_BONUS[t] * durBonusMo(mo); }
 
-      function fmt(n)   { return '€'+Math.round(n).toLocaleString(); }
-      function fmtD(n)  { return '€'+n.toFixed(2); }
-      function fmtP(n)  { return (n*100).toFixed(2)+'%'; }
-      function fmtPr(n) { return Math.round(n*100)+'%'; }
+      function fmt(n)   { return '€' + Math.round(n).toLocaleString(); }
+      function fmtD(n)  { return '€' + n.toFixed(2); }
+      function fmtP(n)  { return (n * 100).toFixed(2) + '%'; }
+      function fmtPr(n) { return Math.round(n * 100) + '%'; }
 
       function bonusCombos(cr) {
         if (!cr) return [];
-        const seen=new Set(), out=[];
-        [[cr,1],[Math.floor(cr/2),2],[Math.floor(cr/3),3],[5,Math.floor(cr/5)]].forEach(([d,m])=>{
-          if(d>=5&&d<=35&&m>=1&&d*m===cr){const k=d+'x'+m;if(!seen.has(k)){seen.add(k);out.push({d,m});}}
+        const seen = new Set();
+        const out = [];
+        [[cr,1],[Math.floor(cr/2),2],[Math.floor(cr/3),3],[5,Math.floor(cr/5)]].forEach(([d,m]) => {
+          if (d >= 5 && d <= 35 && m >= 1 && d * m === cr) {
+            const k = d + 'x' + m;
+            if (!seen.has(k)) { seen.add(k); out.push({ d, m }); }
+          }
         });
-        return out.slice(0,4);
+        return out.slice(0, 4);
       }
+
+      const cityGrid = document.getElementById('cityGrid');
+      CITIES.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'city-btn';
+        btn.dataset.id = c.id;
+        btn.type = 'button';
+        btn.innerHTML = `<div class="cb-name">${c.name}</div><div class="cb-count">${c.count} display${c.count>1?'s':''}</div>`;
+        btn.addEventListener('click', () => {
+          activeCity = (activeCity === c.id) ? null : c.id;
+          if (activeCity) setDisplays(c.count);
+          updateCityButtons();
+          render();
+        });
+        cityGrid.appendChild(btn);
+      });
+
+      function updateCityButtons() {
+        document.querySelectorAll('.city-btn').forEach(btn => {
+          const city = CITIES.find(c => c.id === btn.dataset.id);
+          btn.classList.remove('active', 'active-multi');
+          if (btn.dataset.id === activeCity) btn.classList.add(city.multi ? 'active-multi' : 'active');
+        });
+      }
+
+      const displayInput = document.getElementById('displayInput');
+
+      function setDisplays(val) {
+        const n = Math.max(1, Math.min(35, Math.round(val)));
+        displays = n;
+        displayInput.value = n;
+        if (activeCity) {
+          const city = CITIES.find(c => c.id === activeCity);
+          if (city && city.count !== n) { activeCity = null; updateCityButtons(); }
+        }
+        updateTierBadge(n);
+      }
+
+      function updateTierBadge(n) {
+        const tier = snapTier(n);
+        const pct  = tier > 0 ? Math.round(VOL_D[tier] * 100) : 0;
+        const meta = TIER_META[pct] || TIER_META[0];
+        const badge = document.getElementById('tierBadge');
+        badge.className = 'tier-badge ' + meta.cls;
+        badge.textContent = tier > 0 ? meta.label + ' (tier: ' + tier + ' units)' : meta.label;
+        document.getElementById('tierDisplay').textContent = tier > 0 ? tier + ' units' : 'none yet';
+
+        const nextTier = TIERS.find(t => t > n);
+        const hint = document.getElementById('nextTierHint');
+        if (nextTier && pct < 25) {
+          const nextPct = Math.round(VOL_D[nextTier] * 100);
+          hint.innerHTML = `Add <strong>${nextTier - n}</strong> more display${(nextTier-n)>1?'s':''} to reach the ${nextTier}-unit tier and unlock <strong>${nextPct}%</strong> volume discount.`;
+        } else if (n === 35) {
+          hint.innerHTML = `You&rsquo;re on the full network &mdash; maximum volume discount applied.`;
+        } else {
+          hint.innerHTML = '';
+        }
+      }
+
+      displayInput.addEventListener('input', () => {
+        const v = parseInt(displayInput.value);
+        if (!isNaN(v)) { setDisplays(v); render(); }
+      });
+      displayInput.addEventListener('blur', () => {
+        setDisplays(parseInt(displayInput.value) || 1);
+        render();
+      });
+      document.getElementById('stepDown').addEventListener('click', () => { setDisplays(displays - 1); render(); });
+      document.getElementById('stepUp').addEventListener('click',   () => { setDisplays(displays + 1); render(); });
 
       document.getElementById('pageDate').textContent =
         new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
       function render() {
-        const pkg   = +document.getElementById('selPkg').value;
         const mo    = +document.getElementById('selMo').value;
-        const agPct = +document.getElementById('agSlider').value/100;
-        const asPct = +document.getElementById('asSlider').value/100;
+        const agPct = +document.getElementById('agSlider').value / 100;
+        const asPct = +document.getElementById('asSlider').value / 100;
+        const n     = displays;
 
-        document.getElementById('agVal').textContent = Math.round(agPct*100)+'%';
-        document.getElementById('asVal').textContent = asPct===0?'0% (none)':Math.round(asPct*100)+'%';
+        document.getElementById('agVal').textContent = Math.round(agPct * 100) + '%';
+        document.getElementById('asVal').textContent = asPct === 0 ? '0% (none)' : Math.round(asPct * 100) + '%';
 
-        const totC = agPct+asPct;
+        const totC = agPct + asPct;
         const wEl  = document.getElementById('warnMsg');
-        if      (totC>0.40){wEl.style.display='block';wEl.textContent='Warning: combined commissions ('+fmtPr(totC)+') exceed 40% — review deal viability.';}
-        else if (totC>0.30){wEl.style.display='block';wEl.textContent='Note: combined commissions are '+fmtPr(totC)+' — confirm margins are acceptable.';}
-        else                {wEl.style.display='none';}
+        if (totC > 0.40) {
+          wEl.style.display = 'block';
+          wEl.textContent = 'Warning: combined commissions (' + fmtPr(totC) + ') exceed 40% — review deal viability.';
+        } else if (totC > 0.30) {
+          wEl.style.display = 'block';
+          wEl.textContent = 'Note: combined commissions are ' + fmtPr(totC) + ' — confirm margins are acceptable.';
+        } else {
+          wEl.style.display = 'none';
+        }
 
-        const d       = disc(pkg,mo);
-        const np      = netPrice(pkg,mo);
-        const tv      = totalNet(pkg,mo);
-        const listTot = LIST*pkg*mo;
-        const agComm  = tv*agPct;
-        const asComm  = tv*asPct;
-        const moRev   = tv-agComm-asComm;
-        const cr      = bonusCr(pkg,mo);
-        const crVal   = cr*LIST;
+        const tier    = snapTier(n);
+        const d       = disc(n, mo);
+        const np      = netPrice(n, mo);
+        const tv      = totalNet(n, mo);
+        const listTot = LIST * n * mo;
+        const agComm  = tv * agPct;
+        const asComm  = tv * asPct;
+        const moRev   = tv - agComm - asComm;
+        const cr      = bonusCr(n, mo);
+        const crVal   = cr * LIST;
 
-        document.getElementById('metricsRow').innerHTML=`
+        document.getElementById('metricsRow').innerHTML = `
+          <div class="met"><div class="ml">Displays booked</div><div class="mv">${n}</div><div class="ms">Discount tier: ${tier > 0 ? tier + ' units' : 'none'}</div></div>
           <div class="met"><div class="ml">Net price / display / month</div><div class="mv">${fmtD(np)}</div><div class="ms">List €250 &middot; ${fmtP(d)} off</div></div>
-          <div class="met"><div class="ml">Total campaign value</div><div class="mv">${fmt(tv)}</div><div class="ms">${pkg} displays &times; ${mo} months</div></div>
+          <div class="met"><div class="ml">Total campaign value</div><div class="mv">${fmt(tv)}</div><div class="ms">${n} displays &times; ${mo} months</div></div>
           <div class="met"><div class="ml">Agency commission</div><div class="mv">${fmt(agComm)}</div><div class="ms">${fmtPr(agPct)} of ${fmt(tv)}</div></div>
           ${asPct>0?`<div class="met"><div class="ml">Associate commission</div><div class="mv">${fmt(asComm)}</div><div class="ms">${fmtPr(asPct)} of ${fmt(tv)}</div></div>`:''}
           <div class="met hi"><div class="ml">Media owner revenue</div><div class="mv">${fmt(moRev)}</div><div class="ms">After all commissions</div></div>
@@ -452,69 +602,82 @@
           <div class="met"><div class="ml">Client saving vs list</div><div class="mv">${fmt(listTot-tv)}</div><div class="ms">Discount only &middot; excl. bonus</div></div>
         `;
 
-        const fi=[{l:'List total',v:fmt(listTot)},{l:fmtP(d)+' discount',v:fmt(tv)},{l:'Agency '+fmtPr(agPct),v:fmt(agComm)}];
-        if(asPct>0)fi.push({l:'Associate '+fmtPr(asPct),v:fmt(asComm)});
-        fi.push({l:'Media owner revenue',v:fmt(moRev),cls:'fb-mo'});
-        if(cr>0)fi.push({l:'Bonus credits',v:cr+' disp-mo',cls:'fb-bonus'});
-        document.getElementById('flowRow').innerHTML=fi.map((f,i)=>
-          (i>0?'<div class="fa">&nbsp;&rarr;&nbsp;</div>':'')+
-          `<div class="fb ${f.cls||''}"><div class="fbl">${f.l}</div><div class="fbv">${f.v}</div></div>`
+        const fi = [
+          { l: 'List total', v: fmt(listTot) },
+          { l: fmtP(d) + ' off', v: fmt(tv) },
+          { l: 'Agency ' + fmtPr(agPct), v: fmt(agComm) }
+        ];
+        if (asPct > 0) fi.push({ l: 'Associate ' + fmtPr(asPct), v: fmt(asComm) });
+        fi.push({ l: 'Media owner revenue', v: fmt(moRev), cls: 'fb-mo' });
+        if (cr > 0) fi.push({ l: 'Bonus credits', v: cr + ' dm', cls: 'fb-bonus' });
+        document.getElementById('flowRow').innerHTML = fi.map((f, i) =>
+          (i > 0 ? '<div class="fa">&rarr;</div>' : '') +
+          `<div class="fb ${f.cls || ''}"><div class="fbl">${f.l}</div><div class="fbv">${f.v}</div></div>`
         ).join('');
 
-        if(cr>0){
-          const combos=bonusCombos(cr);
-          const chips=combos.map(c=>`<div class="bonus-chip">${c.d} displays &times; ${c.m} month${c.m>1?'s':''}</div>`).join('');
-          const bmo=durBonusMo(mo);
-          document.getElementById('bonusSection').innerHTML=`
+        if (cr > 0) {
+          const combos = bonusCombos(cr);
+          const chips = combos.map(c => `<div class="bonus-chip">${c.d} displays &times; ${c.m} month${c.m>1?'s':''}</div>`).join('');
+          const bmo = durBonusMo(mo);
+          document.getElementById('bonusSection').innerHTML = `
             <div class="sec-label">Bonus credits</div>
             <div class="bonus-box">
-              <div class="bt">${cr} bonus display-months earned on this campaign</div>
-              <div class="br">${VOL_BONUS[pkg]} bonus display(s) from volume &times; ${bmo} bonus month(s) from duration = ${cr} display-months &middot; list value &euro;${crVal.toLocaleString()}<br>
-              Redeemable within <strong>6 months</strong> post-campaign end &middot; min <strong>5 display-months</strong> per redemption &middot; split bookings allowed &middot; no commission applies</div>
-              ${chips?`<div class="bc">${chips}</div>`:''}
+              <div class="bt">${cr} bonus display-months earned</div>
+              <div class="br">${volBonusUnits(n)} display(s) from volume tier &times; ${bmo} month(s) from duration = ${cr} display-months &middot; list value &euro;${crVal.toLocaleString()}<br>
+              Redeemable within <strong>6 months</strong> post-campaign &middot; min <strong>5 display-months</strong> per redemption &middot; split bookings allowed &middot; no commission</div>
+              ${chips ? `<div class="bc">${chips}</div>` : ''}
             </div>`;
         } else {
-          document.getElementById('bonusSection').innerHTML=`
+          document.getElementById('bonusSection').innerHTML = `
             <div class="sec-label">Bonus credits</div>
-            <div class="no-bonus">No bonus credits on this combination. Credits are awarded from 10+ displays and 3+ month campaigns.</div>`;
+            <div class="no-bonus">No bonus credits on this combination. Credits are awarded from 10+ displays (tier) and 3+ month campaigns.</div>`;
         }
 
-        document.getElementById('noteRow').innerHTML=
-          `<strong>Discount logic:</strong> vol ${fmtPr(VOL_D[pkg])} + dur ${fmtPr(DUR_D[mo])} &rarr; 1&minus;(1&minus;${VOL_D[pkg]})&times;(1&minus;${DUR_D[mo]}) = ${fmtP(d)} combined. `+
-          (asPct>0?`Agency ${fmt(agComm)} + associate ${fmt(asComm)} = ${fmt(agComm+asComm)} total commissions. `:`Agency earns ${fmt(agComm)}. `)+
+        const vd = volDisc(n);
+        const dd = DUR_D[mo];
+        document.getElementById('noteRow').innerHTML =
+          `<strong>Discount logic:</strong> ${n} displays → tier ${tier>0?tier:'none'} (vol ${fmtPr(vd)}) + dur ${fmtPr(dd)} → 1&minus;(1&minus;${vd})&times;(1&minus;${dd}) = ${fmtP(d)} combined. ` +
+          (asPct>0 ? `Agency ${fmt(agComm)} + associate ${fmt(asComm)} = ${fmt(agComm+asComm)} total commissions. ` : `Agency earns ${fmt(agComm)}. `) +
           `<strong>Media owner revenue: ${fmt(moRev)}.</strong>`;
 
-        const colHdr=MOS.map(m=>`<th>${m}mo</th>`).join('');
-        let rows='';
-        PKGS.forEach(p=>{
-          rows+=`<tr class="${p===pkg?'hl':''}"><td>${p} units</td>`;
-          MOS.forEach(m=>{
-            const sel=p===pkg&&m===mo;
-            const tv2=totalNet(p,m),np2=netPrice(p,m),d2=disc(p,m),cr2=bonusCr(p,m);
+        const colHdr = MOS.map(m => `<th>${m}mo</th>`).join('');
+        let rows = '';
+        TIERS.forEach(t => {
+          const isHl = t === tier;
+          rows += `<tr class="${isHl ? 'hl' : ''}"><td>${t}u</td>`;
+          MOS.forEach(m => {
+            const sel  = isHl && m === mo;
+            const tv2  = totalNetT(t, m);
+            const np2  = netPriceT(t, m);
+            const d2   = discT(t, m);
+            const cr2  = bonusCrT(t, m);
             let val;
-            if     (mode==='net')    val='€'+np2.toFixed(2);
-            else if(mode==='total')  val=fmt(tv2);
-            else if(mode==='morev')  val=fmt(tv2*(1-agPct-asPct));
-            else if(mode==='disc')   val=fmtP(d2);
-            else                     val=cr2>0?cr2+' dm':'—';
-            rows+=`<td class="${sel?'sel':''}">${val}</td>`;
+            if (mode === 'net')       val = '€' + np2.toFixed(2);
+            else if (mode === 'total')  val = fmt(tv2);
+            else if (mode === 'morev')  val = fmt(tv2 * (1 - agPct - asPct));
+            else if (mode === 'disc')   val = fmtP(d2);
+            else                        val = cr2 > 0 ? cr2 + 'dm' : '—';
+            rows += `<td class="${sel ? 'sel' : ''}">${val}</td>`;
           });
-          rows+='</tr>';
+          rows += '</tr>';
         });
-        document.getElementById('mainTable').innerHTML=
-          `<thead><tr><th>Package</th>${colHdr}</tr></thead><tbody>${rows}</tbody>`;
+        document.getElementById('mainTable').innerHTML =
+          `<thead><tr><th>Tier</th>${colHdr}</tr></thead><tbody>${rows}</tbody>`;
       }
 
-      document.getElementById('selPkg').addEventListener('change',render);
-      document.getElementById('selMo').addEventListener('change',render);
-      document.getElementById('agSlider').addEventListener('input',render);
-      document.getElementById('asSlider').addEventListener('input',render);
-      document.getElementById('togRow').addEventListener('click',e=>{
-        const btn=e.target.closest('.tog'); if(!btn)return;
-        mode=btn.dataset.mode;
-        document.querySelectorAll('.tog').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active'); render();
+      document.getElementById('selMo').addEventListener('change', render);
+      document.getElementById('agSlider').addEventListener('input', render);
+      document.getElementById('asSlider').addEventListener('input', render);
+      document.getElementById('togRow').addEventListener('click', e => {
+        const btn = e.target.closest('.tog');
+        if (!btn) return;
+        mode = btn.dataset.mode;
+        document.querySelectorAll('.tog').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
       });
+
+      setDisplays(displays);
       render();
     }
 
