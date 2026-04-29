@@ -24,14 +24,8 @@
       justify-content: space-between; padding: 0 16px;
       height: 52px; position: sticky; top: 0; z-index: 100;
     }
-    .logo { display: flex; align-items: stretch; height: 32px; border-radius: 3px; overflow: hidden; }
-    .logo-dg {
-      background: #CC0000; display: flex; align-items: center;
-      justify-content: center; width: 44px; flex-shrink: 0;
-    }
-    .logo-dg span  { color: #fff; font-size: 15px; font-weight: 700; }
-    .logo-net { background: #222; display: flex; align-items: center; padding: 0 10px; }
-    .logo-net span { color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+    .logo { display: flex; align-items: center; height: 34px; }
+    .logo img { height: 34px; width: auto; display: block; }
     .nav-right { display: flex; align-items: center; gap: 10px; }
     .nav-user { font-size: 11px; color: #888; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-admin {
@@ -224,6 +218,10 @@
     .tbl tr.hl td:first-child { background: #dce9f7; color: #0C447C; }
     .tbl td.sel { outline: 2px solid #CC0000; outline-offset: -2px; }
 
+    @media (max-width: 520px) {
+      table.tbl { min-width: 820px; table-layout: auto; }
+    }
+
     .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 480px) { .rules-grid { grid-template-columns: 1fr; } }
     .rule-card {
@@ -242,8 +240,7 @@
 
   <nav>
     <div class="logo">
-      <div class="logo-dg"><span>DG</span></div>
-      <div class="logo-net"><span>NETWORK</span></div>
+      <img src="/assets/dg-network-logo.png" alt="DG Network">
     </div>
     <div class="nav-right">
       <span class="nav-user" id="navUser"></span>
@@ -390,22 +387,82 @@
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const ADMIN_EMAILS = new Set(["mike@vevivo.com", "tony@dgnetwork.eu"]);
+    const PUBLIC_API_BASE = "https://us-central1-rate-card-by-dgnetwork.cloudfunctions.net/publicApi";
 
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "index.html";
-        return;
+    function userDomain(email) {
+      const e = String(email || "").trim().toLowerCase();
+      const at = e.lastIndexOf("@");
+      if (at < 0) return null;
+      return e.slice(at + 1);
+    }
+
+    async function fetchAllowedDomains() {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      try {
+        const res = await fetch(`${PUBLIC_API_BASE}/allowed-domains`, { method: "GET", signal: controller.signal });
+        const text = await res.text();
+        let json = null;
+        try { json = text ? JSON.parse(text) : null; } catch (_) {}
+        if (!res.ok) throw new Error((json && (json.message || json.error) ? (json.message || json.error) : text) || `HTTP ${res.status}`);
+        const domains = json && Array.isArray(json.domains) ? json.domains : [];
+        return { ok: true, domains: domains.map(d => String(d || "").trim().toLowerCase()).filter(Boolean) };
+      } finally {
+        clearTimeout(timeoutId);
       }
-      if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase())) {
-        signOut(auth).then(() => window.location.href = "index.html");
-        return;
-      }
-      document.getElementById("navUser").textContent = user.email;
-      if (ADMIN_EMAILS.has(user.email.toLowerCase())) {
-        document.getElementById("lnkAdmin").style.display = "";
-      }
-      document.body.classList.remove("loading");
-      initTool();
+    }
+
+    function isAllowed(userEmail, allowedEmails, allowedDomains) {
+      const email = String(userEmail || "").trim().toLowerCase();
+      if (ADMIN_EMAILS.has(email)) return true;
+      const domain = userDomain(email);
+      if (!allowedEmails.length && !allowedDomains.length) return true;
+      if (allowedEmails.includes(email)) return true;
+      if (domain && allowedDomains.includes(domain)) return true;
+      return false;
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      (async () => {
+        if (!user) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        const userEmail = String(user.email || "").toLowerCase();
+        const allowedEmails = ALLOWED_EMAILS.map(e => String(e || "").trim().toLowerCase()).filter(Boolean);
+        let allowedDomains = [];
+        let domainsLoaded = false;
+        try {
+          const cfg = await fetchAllowedDomains();
+          allowedDomains = cfg.domains;
+          domainsLoaded = true;
+        } catch (_) {
+          domainsLoaded = false;
+          allowedDomains = [];
+        }
+
+        if (!domainsLoaded && allowedEmails.length === 0) {
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        if (!isAllowed(userEmail, allowedEmails, allowedDomains)) {
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        document.getElementById("navUser").textContent = user.email;
+        if (ADMIN_EMAILS.has(userEmail)) {
+          document.getElementById("lnkAdmin").style.display = "";
+        }
+        document.body.classList.remove("loading");
+        initTool();
+      })().catch(() => {
+        signOut(auth).then(() => (window.location.href = "index.html"));
+      });
     });
 
     document.getElementById("btnSignOut").addEventListener("click", () => {

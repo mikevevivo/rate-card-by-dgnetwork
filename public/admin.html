@@ -93,6 +93,24 @@
     </div>
 
     <div class="sec">
+      <div class="sec-label">Access Control</div>
+      <div class="rule-card">
+        <div class="rc-title">Allowed domains</div>
+        <div class="rc-body">
+          Users can access the tool if their email domain matches one of these domains.
+          <div class="row">
+            <input id="domainInput" type="text" placeholder="company.com" autocomplete="off">
+            <button class="btn-invite" id="btnAddDomain">Add domain</button>
+          </div>
+          <div class="msg" id="domainsMsg"></div>
+          <div class="tbl-wrap" style="margin-top:10px;">
+            <table class="tbl" id="domainsTable"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
       <div class="sec-label">Pending Invites</div>
       <div class="tbl-wrap">
         <table class="tbl" id="invitesTable"></table>
@@ -111,12 +129,13 @@
   <script src="js/config.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const ADMIN_EMAILS = new Set(["mike@vevivo.com", "tony@dgnetwork.eu"]);
     const ADMIN_API_BASE = "https://us-central1-rate-card-by-dgnetwork.cloudfunctions.net/adminApi";
+    const PUBLIC_API_BASE = "https://us-central1-rate-card-by-dgnetwork.cloudfunctions.net/publicApi";
 
     const usersTable = document.getElementById("usersTable");
     const invitesTable = document.getElementById("invitesTable");
@@ -124,6 +143,10 @@
     const btnInvite = document.getElementById("btnInvite");
     const adminMsg = document.getElementById("adminMsg");
     const invitesMsg = document.getElementById("invitesMsg");
+    const domainsTable = document.getElementById("domainsTable");
+    const domainInput = document.getElementById("domainInput");
+    const btnAddDomain = document.getElementById("btnAddDomain");
+    const domainsMsg = document.getElementById("domainsMsg");
 
     function setMsg(msg, isError) {
       adminMsg.textContent = msg || "";
@@ -133,6 +156,44 @@
     function setInvitesMsg(msg, isError) {
       invitesMsg.textContent = msg || "";
       invitesMsg.style.color = isError ? "#cc0000" : "#777";
+    }
+
+    function userDomain(email) {
+      const e = String(email || "").trim().toLowerCase();
+      const at = e.lastIndexOf("@");
+      if (at < 0) return null;
+      return e.slice(at + 1);
+    }
+
+    async function fetchAllowedDomains() {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      try {
+        const res = await fetch(`${PUBLIC_API_BASE}/allowed-domains`, { method: "GET", signal: controller.signal });
+        const text = await res.text();
+        let json = null;
+        try { json = text ? JSON.parse(text) : null; } catch (_) {}
+        if (!res.ok) throw new Error((json && (json.message || json.error) ? (json.message || json.error) : text) || `HTTP ${res.status}`);
+        const domains = json && Array.isArray(json.domains) ? json.domains : [];
+        return { ok: true, domains: domains.map(d => String(d || "").trim().toLowerCase()).filter(Boolean) };
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    function isAllowed(userEmail, allowedEmails, allowedDomains) {
+      const email = String(userEmail || "").trim().toLowerCase();
+      if (ADMIN_EMAILS.has(email)) return true;
+      const domain = userDomain(email);
+      if (!allowedEmails.length && !allowedDomains.length) return true;
+      if (allowedEmails.includes(email)) return true;
+      if (domain && allowedDomains.includes(domain)) return true;
+      return false;
+    }
+
+    function setDomainsMsg(msg, isError) {
+      domainsMsg.textContent = msg || "";
+      domainsMsg.style.color = isError ? "#cc0000" : "#777";
     }
 
     async function api(path, options) {
@@ -191,6 +252,17 @@
       invitesTable.innerHTML = `${hdr}<tbody>${rows}</tbody>`;
     }
 
+    function renderDomains(domains) {
+      const hdr = `<thead><tr><th>Domain</th><th>Actions</th></tr></thead>`;
+      const rows = (domains || []).map(d => {
+        const domain = String(d || "").trim();
+        const safe = domain.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const encoded = encodeURIComponent(domain);
+        return `<tr><td style="font-weight:600; color:#666; background:#fafafa;">${safe}</td><td>${domain ? `<button class="btn-del" data-domain="${encoded}">Remove</button>` : "—"}</td></tr>`;
+      }).join("");
+      domainsTable.innerHTML = `${hdr}<tbody>${rows || `<tr><td style="font-weight:600; color:#666; background:#fafafa;">(none)</td><td>—</td></tr>`}</tbody>`;
+    }
+
     async function loadUsers() {
       setMsg("Loading users…", false);
       const data = await api("/users", { method: "GET" });
@@ -203,6 +275,13 @@
       const data = await api("/invites", { method: "GET" });
       renderInvites(data.invites || []);
       setInvitesMsg(`Loaded ${data.invites ? data.invites.length : 0} pending invites.`, false);
+    }
+
+    async function loadDomains() {
+      setDomainsMsg("Loading domains…", false);
+      const data = await api("/allowed-domains", { method: "GET" });
+      renderDomains(data.domains || []);
+      setDomainsMsg(`Loaded ${(data.domains || []).length} domains.`, false);
     }
 
     async function copyText(text) {
@@ -240,6 +319,25 @@
       }
     });
 
+    domainsTable.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-domain]");
+      if (!btn) return;
+      const domain = decodeURIComponent(btn.getAttribute("data-domain") || "");
+      if (!domain) return;
+      if (!confirm(`Remove allowed domain "${domain}"?`)) return;
+      btn.disabled = true;
+      setDomainsMsg("Removing domain…", false);
+      try {
+        await api(`/allowed-domains/${encodeURIComponent(domain)}`, { method: "DELETE" });
+        setDomainsMsg(`Removed ${domain}.`, false);
+        await loadDomains();
+      } catch (err) {
+        setDomainsMsg(String(err && err.message ? err.message : err), true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
     usersTable.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-uid]");
       if (!btn) return;
@@ -260,23 +358,51 @@
       }
     });
 
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "index.html";
-        return;
-      }
-      if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase())) {
-        signOut(auth).then(() => window.location.href = "index.html");
-        return;
-      }
-      if (!ADMIN_EMAILS.has(user.email.toLowerCase())) {
-        window.location.href = "tool.html";
-        return;
-      }
-      document.getElementById("navUser").textContent = user.email;
-      document.body.classList.remove("loading");
-      loadUsers().catch(e => setMsg(String(e && e.message ? e.message : e), true));
-      loadInvites().catch(e => setInvitesMsg(String(e && e.message ? e.message : e), true));
+    onAuthStateChanged(auth, (user) => {
+      (async () => {
+        if (!user) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        const userEmail = String(user.email || "").toLowerCase();
+        const allowedEmails = ALLOWED_EMAILS.map(e => String(e || "").trim().toLowerCase()).filter(Boolean);
+        let allowedDomains = [];
+        let domainsLoaded = false;
+        try {
+          const cfg = await fetchAllowedDomains();
+          allowedDomains = cfg.domains;
+          domainsLoaded = true;
+        } catch (_) {
+          domainsLoaded = false;
+          allowedDomains = [];
+        }
+
+        if (!domainsLoaded && allowedEmails.length === 0) {
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        if (!isAllowed(userEmail, allowedEmails, allowedDomains)) {
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        if (!ADMIN_EMAILS.has(userEmail)) {
+          window.location.href = "tool.html";
+          return;
+        }
+
+        document.getElementById("navUser").textContent = user.email;
+        document.body.classList.remove("loading");
+        loadUsers().catch(e => setMsg(String(e && e.message ? e.message : e), true));
+        loadInvites().catch(e => setInvitesMsg(String(e && e.message ? e.message : e), true));
+        loadDomains().catch(e => setDomainsMsg(String(e && e.message ? e.message : e), true));
+      })().catch(() => {
+        signOut(auth).then(() => (window.location.href = "index.html"));
+      });
     });
 
     document.getElementById("btnSignOut").addEventListener("click", () => {
@@ -290,10 +416,18 @@
       setMsg("Sending invite…", false);
       try {
         const data = await api("/invite", { method: "POST", body: JSON.stringify({ email }) });
-        if (data && data.emailSent === false && data.resetLink) {
-          setMsg(`Could not send email automatically. Copy this invite link and send it to ${data.email}: ${data.resetLink}`, true);
-        } else {
-          setMsg(`Invite sent to ${data.email}.`, false);
+        const invitedEmail = (data && data.email ? String(data.email) : email).trim();
+
+        try {
+          await sendPasswordResetEmail(auth, invitedEmail);
+          setMsg(`Invite sent to ${invitedEmail}.`, false);
+        } catch (err) {
+          if (data && data.resetLink) {
+            const detail = err && err.code ? `${err.code}` : (err && err.message ? err.message : String(err));
+            setMsg(`Could not send email automatically (${detail}). Copy this invite link and send it to ${invitedEmail}: ${data.resetLink}`, true);
+          } else {
+            throw err;
+          }
         }
         inviteEmail.value = "";
         await loadUsers();
@@ -302,6 +436,23 @@
         setMsg(String(e && e.message ? e.message : e), true);
       } finally {
         btnInvite.disabled = false;
+      }
+    });
+
+    btnAddDomain.addEventListener("click", async () => {
+      const domain = domainInput.value.trim();
+      if (!domain) { setDomainsMsg("Enter a domain first.", true); return; }
+      btnAddDomain.disabled = true;
+      setDomainsMsg("Adding domain…", false);
+      try {
+        await api("/allowed-domains", { method: "POST", body: JSON.stringify({ domain }) });
+        setDomainsMsg(`Added ${domain}.`, false);
+        domainInput.value = "";
+        await loadDomains();
+      } catch (e) {
+        setDomainsMsg(String(e && e.message ? e.message : e), true);
+      } finally {
+        btnAddDomain.disabled = false;
       }
     });
   </script>

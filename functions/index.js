@@ -17,6 +17,67 @@ admin.initializeApp();
 
 const ADMIN_EMAILS = new Set(["mike@vevivo.com", "tony@dgnetwork.eu"]);
 const WEB_API_KEY = "AIzaSyAxSGf24Uf23tmXrBh_zX3aezL5GmUMFsE";
+const db = admin.firestore();
+const accessDoc = db.doc("config/access");
+
+function httpError(httpStatus, publicError, message) {
+  const err = new Error(message || publicError || "ERROR");
+  err.httpStatus = httpStatus;
+  err.publicError = publicError;
+  return err;
+}
+
+function isFirestoreDisabledError(e) {
+  const msg = String(e && e.message ? e.message : e || "");
+  const code = e && (e.code || e.status);
+  return (
+    code === 7 ||
+    code === "7" ||
+    code === "permission-denied" ||
+    /PERMISSION_DENIED/i.test(msg) ||
+    /firestore\.googleapis\.com/i.test(msg)
+  );
+}
+
+function normalizeDomain(input) {
+  const v = String(input || "").trim().toLowerCase();
+  const noAt = v.startsWith("@") ? v.slice(1) : v;
+  const domain = noAt.replace(/\.+$/g, "");
+  if (!domain) return null;
+  if (domain.length > 253) return null;
+  if (!/^[a-z0-9.-]+$/.test(domain)) return null;
+  if (!domain.includes(".")) return null;
+  if (domain.startsWith(".") || domain.endsWith(".")) return null;
+  if (domain.includes("..")) return null;
+  return domain;
+}
+
+function domainFromEmail(email) {
+  const e = String(email || "").trim().toLowerCase();
+  const at = e.lastIndexOf("@");
+  if (at < 0) return null;
+  return normalizeDomain(e.slice(at + 1));
+}
+
+async function getAllowedDomains() {
+  try {
+    const snap = await accessDoc.get();
+    const data = snap.exists ? snap.data() : null;
+    const domains = data && Array.isArray(data.allowedDomains) ? data.allowedDomains : [];
+    return domains
+      .map((d) => normalizeDomain(d))
+      .filter((d) => !!d);
+  } catch (e) {
+    if (isFirestoreDisabledError(e)) {
+      throw httpError(
+        503,
+        "FIRESTORE_DISABLED",
+        "Allowed domains are unavailable because Cloud Firestore is not enabled for this project. Enable Firestore (Firestore Database) in Firebase Console, or enable the Cloud Firestore API, then retry."
+      );
+    }
+    throw e;
+  }
+}
 
 async function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
@@ -214,42 +275,14 @@ exports.adminApi = functions.https.onRequest(async (req, res) => {
       };
       await admin.auth().setCustomUserClaims(userRecord.uid, nextClaims);
 
-      let emailSent = false;
-      let inviteFailure = null;
-
-      if (isEmulator()) {
-        inviteFailure = { message: "EMAIL_DISABLED_IN_EMULATOR" };
-      } else {
-        try {
-          const r = await fetchWithTimeout(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${WEB_API_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
-          }, 12000);
-
-          if (!r.ok) {
-            inviteFailure = { status: r.status, body: await r.text() };
-          } else {
-            emailSent = true;
-          }
-        } catch (e) {
-          inviteFailure = { message: String(e && e.message ? e.message : e) };
-        }
-      }
-
-      if (!emailSent) {
-        const resetLink = await withTimeout(
-          admin.auth().generatePasswordResetLink(email, {
-            url: getContinueUrl(),
-            handleCodeInApp: false,
-          }),
-          12000
-        );
-        res.json({ ok: true, email, created, emailSent: false, resetLink, inviteFailure });
-        return;
-      }
-
-      res.json({ ok: true, email, created, emailSent: true });
+      const resetLink = await withTimeout(
+        admin.auth().generatePasswordResetLink(email, {
+          url: getContinueUrl(),
+          handleCodeInApp: false,
+        }),
+        12000
+      );
+      res.json({ ok: true, email, created, resetLink });
       return;
     }
 
@@ -316,6 +349,90 @@ exports.adminApi = functions.https.onRequest(async (req, res) => {
       return;
     }
 
+    if (req.method === "GET" && path === "/allowed-domains") {
+      const domains = await getAllowedDomains();
+      res.json({ ok: true, domains });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/allowed-domains") {
+      const body = await readJsonBody(req);
+      const domain = normalizeDomain(body.domain);
+      if (!domain) {
+        res.status(400).json({ error: "INVALID_DOMAIN" });
+        return;
+      }
+
+      try {
+        await db.runTransaction(async (tx) => {
+          const snap = await tx.get(accessDoc);
+          const data = snap.exists ? snap.data() : {};
+          const prev = Array.isArray(data.allowedDomains) ? data.allowedDomains : [];
+          const next = new Set(prev.map((d) => normalizeDomain(d)).filter((d) => !!d));
+          next.add(domain);
+          tx.set(
+            accessDoc,
+            {
+              allowedDomains: Array.from(next).sort(),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedBy: String(adminUser.email || "").toLowerCase(),
+            },
+            { merge: true }
+          );
+        });
+      } catch (e) {
+        if (isFirestoreDisabledError(e)) {
+          throw httpError(
+            503,
+            "FIRESTORE_DISABLED",
+            "Cannot update allowed domains because Cloud Firestore is not enabled for this project. Enable Firestore (Firestore Database) in Firebase Console, or enable the Cloud Firestore API, then retry."
+          );
+        }
+        throw e;
+      }
+
+      res.json({ ok: true, domain });
+      return;
+    }
+
+    if (req.method === "DELETE" && parts[0] === "allowed-domains" && parts[1]) {
+      const domain = normalizeDomain(decodeURIComponent(parts[1]));
+      if (!domain) {
+        res.status(400).json({ error: "INVALID_DOMAIN" });
+        return;
+      }
+
+      try {
+        await db.runTransaction(async (tx) => {
+          const snap = await tx.get(accessDoc);
+          const data = snap.exists ? snap.data() : {};
+          const prev = Array.isArray(data.allowedDomains) ? data.allowedDomains : [];
+          const next = prev.map((d) => normalizeDomain(d)).filter((d) => !!d && d !== domain);
+          tx.set(
+            accessDoc,
+            {
+              allowedDomains: Array.from(new Set(next)).sort(),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedBy: String(adminUser.email || "").toLowerCase(),
+            },
+            { merge: true }
+          );
+        });
+      } catch (e) {
+        if (isFirestoreDisabledError(e)) {
+          throw httpError(
+            503,
+            "FIRESTORE_DISABLED",
+            "Cannot update allowed domains because Cloud Firestore is not enabled for this project. Enable Firestore (Firestore Database) in Firebase Console, or enable the Cloud Firestore API, then retry."
+          );
+        }
+        throw e;
+      }
+
+      res.json({ ok: true, domain });
+      return;
+    }
+
     if (req.method === "DELETE" && parts[0] === "users" && parts[1]) {
       const uid = decodeURIComponent(parts[1]);
       await admin.auth().deleteUser(uid);
@@ -325,6 +442,32 @@ exports.adminApi = functions.https.onRequest(async (req, res) => {
 
     res.status(404).json({ error: "NOT_FOUND" });
   } catch (e) {
-    res.status(500).json({ error: "INTERNAL", message: String(e && e.message ? e.message : e) });
+    const status = e && typeof e.httpStatus === "number" ? e.httpStatus : 500;
+    const error = e && typeof e.publicError === "string" ? e.publicError : "INTERNAL";
+    res.status(status).json({ error, message: String(e && e.message ? e.message : e) });
+  }
+});
+
+exports.publicApi = functions.https.onRequest(async (req, res) => {
+  setCors(req, res);
+  if (req.method === "OPTIONS") {
+    res.status(204).send("");
+    return;
+  }
+
+  const path = (req.path || "/").replace(/\/+$/, "") || "/";
+
+  try {
+    if (req.method === "GET" && (path === "/" || path === "/allowed-domains")) {
+      const domains = await getAllowedDomains();
+      res.json({ ok: true, domains });
+      return;
+    }
+
+    res.status(404).json({ error: "NOT_FOUND" });
+  } catch (e) {
+    const status = e && typeof e.httpStatus === "number" ? e.httpStatus : 500;
+    const error = e && typeof e.publicError === "string" ? e.publicError : "INTERNAL";
+    res.status(status).json({ error, message: String(e && e.message ? e.message : e) });
   }
 });

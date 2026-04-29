@@ -68,8 +68,7 @@ async function main() {
   assert.equal(inviteResult.ok, true);
   assert.equal(inviteResult.email, invitedEmail);
 
-  assert.equal(inviteResult.emailSent, false);
-  assert.ok(inviteResult.resetLink, "Expected resetLink when emailSent=false");
+  assert.ok(inviteResult.resetLink, "Expected resetLink");
 
   const invites1 = await getJson(`${adminApiBase}/invites`, authz);
   assert.ok(Array.isArray(invites1.invites), "Expected invites array");
@@ -106,7 +105,6 @@ async function main() {
         projectId,
         adminEmail,
         invitedEmail,
-        emailSent: inviteResult.emailSent,
         stillPending,
       },
       null,
