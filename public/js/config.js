@@ -22,4 +22,5 @@ const firebaseConfig = {
 const ALLOWED_EMAILS = [
   // "user@example.com",
   // "associate@agency.com",
+  "manolis@dgnetwork.eu",
 ];

@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#111111">
   <title>Admin — Rate Card by DG Network</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,6 +35,8 @@
     input[type=email]:focus { border-color: #CC0000; }
     .btn-invite { font-size: 12px; color: #CC0000; background: transparent; border: 1px solid #CC0000; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
     .btn-invite:hover { background: rgba(204,0,0,0.06); }
+    .btn-copy { font-size: 12px; color: #185FA5; background: transparent; border: 1px solid #185FA5; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+    .btn-copy:hover { background: rgba(24,95,165,0.08); }
     .btn-del { font-size: 12px; color: #fff; background: #111; border: 1px solid #111; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
     .btn-del:hover { background: #000; border-color: #000; }
     .btn-del:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -89,6 +93,14 @@
     </div>
 
     <div class="sec">
+      <div class="sec-label">Pending Invites</div>
+      <div class="tbl-wrap">
+        <table class="tbl" id="invitesTable"></table>
+      </div>
+      <div class="msg" id="invitesMsg"></div>
+    </div>
+
+    <div class="sec">
       <div class="sec-label">Users</div>
       <div class="tbl-wrap">
         <table class="tbl" id="usersTable"></table>
@@ -107,48 +119,76 @@
     const ADMIN_API_BASE = "https://us-central1-rate-card-by-dgnetwork.cloudfunctions.net/adminApi";
 
     const usersTable = document.getElementById("usersTable");
+    const invitesTable = document.getElementById("invitesTable");
     const inviteEmail = document.getElementById("inviteEmail");
     const btnInvite = document.getElementById("btnInvite");
     const adminMsg = document.getElementById("adminMsg");
+    const invitesMsg = document.getElementById("invitesMsg");
 
     function setMsg(msg, isError) {
       adminMsg.textContent = msg || "";
       adminMsg.style.color = isError ? "#cc0000" : "#777";
     }
 
+    function setInvitesMsg(msg, isError) {
+      invitesMsg.textContent = msg || "";
+      invitesMsg.style.color = isError ? "#cc0000" : "#777";
+    }
+
     async function api(path, options) {
       const token = await auth.currentUser.getIdToken();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
       const res = await fetch(`${ADMIN_API_BASE}${path}`, {
         ...(options || {}),
+        signal: controller.signal,
         headers: {
           ...(options && options.headers ? options.headers : {}),
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      });
+      }).finally(() => clearTimeout(timeoutId));
       const text = await res.text();
       let json = null;
       try { json = text ? JSON.parse(text) : null; } catch (_) {}
       if (!res.ok) {
-        const msg = (json && (json.message || json.error)) ? (json.message || json.error) : (text || `HTTP ${res.status}`);
+        const detail = json && (json.message || json.error || json.detail) ? (json.message || json.error || json.detail) : (text || `HTTP ${res.status}`);
+        const msg = typeof detail === "string" ? detail : JSON.stringify(detail);
         throw new Error(msg);
       }
       return json;
     }
 
     function renderUsers(users) {
-      const hdr = `<thead><tr><th>Email</th><th>Verified</th><th>Disabled</th><th>Created</th><th>Last sign-in</th><th>Actions</th></tr></thead>`;
+      const hdr = `<thead><tr><th>Email</th><th>Role</th><th>Verified</th><th>Disabled</th><th>Created</th><th>Last sign-in</th><th>Actions</th></tr></thead>`;
       const rows = (users || []).map(u => {
         const email = u.email || "(no email)";
+        const role = u.role || "user";
         const ver = u.emailVerified ? "Yes" : "No";
         const dis = u.disabled ? "Yes" : "No";
         const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "—";
         const last = u.lastSignInAt ? new Date(u.lastSignInAt).toLocaleString() : "—";
         const uid = u.uid || "";
         const safeEmail = String(email).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        return `<tr><td style="font-weight:600; color:#666; background:#fafafa;">${safeEmail}</td><td>${ver}</td><td>${dis}</td><td>${created}</td><td>${last}</td><td>${uid ? `<button class="btn-del" data-uid="${uid}">Delete</button>` : "—"}</td></tr>`;
+        const safeRole = String(role).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return `<tr><td style="font-weight:600; color:#666; background:#fafafa;">${safeEmail}</td><td>${safeRole}</td><td>${ver}</td><td>${dis}</td><td>${created}</td><td>${last}</td><td>${uid ? `<button class="btn-del" data-uid="${uid}">Delete</button>` : "—"}</td></tr>`;
       }).join("");
       usersTable.innerHTML = `${hdr}<tbody>${rows}</tbody>`;
+    }
+
+    function renderInvites(invites) {
+      const hdr = `<thead><tr><th>Email</th><th>Invited</th><th>Invited by</th><th>Created</th><th>Actions</th></tr></thead>`;
+      const rows = (invites || []).map(i => {
+        const email = i.email || "";
+        const emailLabel = email || "(no email)";
+        const invitedAt = i.invitedAt ? new Date(i.invitedAt).toLocaleString() : "—";
+        const invitedBy = i.invitedBy || "—";
+        const created = i.createdAt ? new Date(i.createdAt).toLocaleString() : "—";
+        const safeEmail = String(emailLabel).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const emailAttr = encodeURIComponent(String(email));
+        return `<tr><td style="font-weight:600; color:#666; background:#fafafa;">${safeEmail}</td><td>${invitedAt}</td><td>${invitedBy}</td><td>${created}</td><td>${email ? `<button class="btn-copy" data-invite-email="${emailAttr}">Copy invite link</button>` : "—"}</td></tr>`;
+      }).join("");
+      invitesTable.innerHTML = `${hdr}<tbody>${rows}</tbody>`;
     }
 
     async function loadUsers() {
@@ -157,6 +197,48 @@
       renderUsers(data.users || []);
       setMsg(`Loaded ${data.users ? data.users.length : 0} users.`, false);
     }
+
+    async function loadInvites() {
+      setInvitesMsg("Loading invites…", false);
+      const data = await api("/invites", { method: "GET" });
+      renderInvites(data.invites || []);
+      setInvitesMsg(`Loaded ${data.invites ? data.invites.length : 0} pending invites.`, false);
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+
+    invitesTable.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-invite-email]");
+      if (!btn) return;
+      const email = decodeURIComponent(btn.getAttribute("data-invite-email") || "");
+      if (!email) return;
+      btn.disabled = true;
+      setInvitesMsg("Generating invite link…", false);
+      try {
+        const data = await api("/invites/link", { method: "POST", body: JSON.stringify({ email }) });
+        await copyText(data.resetLink);
+        setInvitesMsg(`Invite link copied for ${data.email}.`, false);
+      } catch (err) {
+        setInvitesMsg(String(err && err.message ? err.message : err), true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
 
     usersTable.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-uid]");
@@ -170,6 +252,7 @@
         await api(`/users/${encodeURIComponent(uid)}`, { method: "DELETE" });
         setMsg("User deleted.", false);
         await loadUsers();
+        await loadInvites();
       } catch (err) {
         setMsg(String(err && err.message ? err.message : err), true);
       } finally {
@@ -193,6 +276,7 @@
       document.getElementById("navUser").textContent = user.email;
       document.body.classList.remove("loading");
       loadUsers().catch(e => setMsg(String(e && e.message ? e.message : e), true));
+      loadInvites().catch(e => setInvitesMsg(String(e && e.message ? e.message : e), true));
     });
 
     document.getElementById("btnSignOut").addEventListener("click", () => {
@@ -206,15 +290,25 @@
       setMsg("Sending invite…", false);
       try {
         const data = await api("/invite", { method: "POST", body: JSON.stringify({ email }) });
-        setMsg(`Invite sent to ${data.email}.`, false);
+        if (data && data.emailSent === false && data.resetLink) {
+          setMsg(`Could not send email automatically. Copy this invite link and send it to ${data.email}: ${data.resetLink}`, true);
+        } else {
+          setMsg(`Invite sent to ${data.email}.`, false);
+        }
         inviteEmail.value = "";
         await loadUsers();
+        await loadInvites();
       } catch (e) {
         setMsg(String(e && e.message ? e.message : e), true);
       } finally {
         btnInvite.disabled = false;
       }
     });
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js"));
+    }
   </script>
 </body>
 </html>
