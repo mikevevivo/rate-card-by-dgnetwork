@@ -16,7 +16,7 @@
       -webkit-text-size-adjust: 100%;
       scroll-behavior: smooth;
     }
-    body { background: #f2f2f2; color: #111; min-height: 100vh; }
+    body { background: #f2f2f2; color: #111; min-height: 100vh; font-size: 15px; }
     body.loading { visibility: hidden; }
 
     nav {
@@ -27,9 +27,9 @@
     .logo { display: flex; align-items: center; height: 34px; }
     .logo img { height: 34px; width: auto; display: block; }
     .nav-right { display: flex; align-items: center; gap: 10px; }
-    .nav-user { font-size: 13px; color: #888; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-user { font-size: 14px; color: #888; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-admin {
-      font-size: 14px; color: #fff; background: #CC0000;
+      font-size: 15px; color: #fff; background: #CC0000;
       border: 1px solid #CC0000; border-radius: 6px;
       padding: 5px 10px; cursor: pointer; text-decoration: none;
       display: inline-flex; align-items: center; white-space: nowrap;
@@ -37,7 +37,7 @@
     }
     .btn-admin:active { background: #aa0000; border-color: #aa0000; }
     .btn-signout {
-      font-size: 14px; color: #ccc; background: transparent;
+      font-size: 15px; color: #ccc; background: transparent;
       border: 1px solid #444; border-radius: 6px;
       padding: 5px 10px; cursor: pointer; white-space: nowrap;
       -webkit-tap-highlight-color: transparent;
@@ -47,12 +47,12 @@
     .page { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
 
     .page-hdr { margin-bottom: 20px; }
-    .page-hdr h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 3px; }
-    .page-hdr p  { font-size: 14px; color: #999; line-height: 1.5; }
+    .page-hdr h1 { font-size: 23px; font-weight: 700; color: #111; margin-bottom: 3px; }
+    .page-hdr p  { font-size: 15px; color: #999; line-height: 1.5; }
 
     .sec { margin-bottom: 22px; }
     .sec-label {
-      font-size: 12px; font-weight: 700; color: #999;
+      font-size: 13px; font-weight: 700; color: #999;
       text-transform: uppercase; letter-spacing: 0.07em;
       margin-bottom: 10px; padding-bottom: 7px;
       border-bottom: 1px solid #e4e4e4;
@@ -79,8 +79,8 @@
       border-color: #185FA5; background: #f0f6ff;
       box-shadow: 0 0 0 2px rgba(24,95,165,0.15);
     }
-    .city-btn .cb-name { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 2px; }
-    .city-btn .cb-count { font-size: 13px; color: #999; }
+    .city-btn .cb-name { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 2px; }
+    .city-btn .cb-count { font-size: 14px; color: #999; }
 
     .display-input-wrap { display: flex; align-items: center; gap: 10px; }
     .display-number-input {
@@ -100,11 +100,11 @@
     }
     .step-btn:active { background: #f0f0f0; }
     .display-hint {
-      font-size: 13px; color: #aaa; margin-top: 6px; line-height: 1.5;
+      font-size: 14px; color: #aaa; margin-top: 6px; line-height: 1.5;
     }
     .display-hint span { color: #CC0000; font-weight: 600; }
     .tier-badge {
-      display: inline-block; font-size: 13px; font-weight: 600;
+      display: inline-block; font-size: 14px; font-weight: 600;
       padding: 3px 8px; border-radius: 6px; margin-top: 6px;
     }
     .tier-badge.vol0  { background: #f0f0f0; color: #888; }
@@ -118,7 +118,7 @@
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
     .ctrl { display: flex; flex-direction: column; gap: 5px; }
-    .ctrl label { font-size: 14px; color: #666; font-weight: 500; }
+    .ctrl label { font-size: 15px; color: #666; font-weight: 500; }
     select {
       width: 100%; padding: 11px 10px; border: 1px solid #ddd;
       border-radius: 10px; font-size: 17px; color: #111; background: #fff;
@@ -132,7 +132,7 @@
     .ctrl-val { font-size: 16px; font-weight: 700; min-width: 52px; text-align: right; color: #111; }
 
     .warn {
-      font-size: 14px; padding: 10px 14px; border-radius: 8px;
+      font-size: 15px; padding: 10px 14px; border-radius: 8px;
       background: #FAEEDA; color: #854F0B; border: 1px solid #EF9F27;
       margin-top: 10px; display: none; line-height: 1.5;
     }
@@ -142,9 +142,9 @@
       background: #fff; border-radius: 10px;
       border: 1px solid #e8e8e8; padding: 14px 16px;
     }
-    .met .ml { font-size: 13px; color: #888; margin-bottom: 5px; line-height: 1.4; }
-    .met .mv { font-size: 22px; font-weight: 600; color: #111; }
-    .met .ms { font-size: 12px; color: #aaa; margin-top: 3px; }
+    .met .ml { font-size: 14px; color: #888; margin-bottom: 5px; line-height: 1.4; }
+    .met .mv { font-size: 23px; font-weight: 600; color: #111; }
+    .met .ms { font-size: 13px; color: #aaa; margin-top: 3px; }
     .met.hi { border-color: #185FA5; }
     .met.hi .mv { color: #185FA5; }
     .met.grn { border-color: #1D9E75; }
@@ -154,8 +154,8 @@
     .flow { display: flex; align-items: stretch; min-width: max-content; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8e8; }
     .fb { background: #fafafa; border-right: 1px solid #e8e8e8; padding: 10px 14px; text-align: center; min-width: 90px; }
     .fb:last-child { border-right: none; }
-    .fb .fbl { font-size: 12px; color: #999; margin-bottom: 4px; }
-    .fb .fbv { font-size: 15px; font-weight: 600; color: #111; }
+    .fb .fbl { font-size: 13px; color: #999; margin-bottom: 4px; }
+    .fb .fbv { font-size: 16px; font-weight: 600; color: #111; }
     .fb.fb-mo  .fbv { color: #185FA5; }
     .fb.fb-mo  { border-top: 2px solid #185FA5; }
     .fb.fb-bonus .fbv { color: #1D9E75; }
@@ -167,21 +167,21 @@
       border: 1px solid #97C459; padding: 16px 18px;
     }
     .bonus-box .bt { font-size: 15px; font-weight: 600; color: #3B6D11; margin-bottom: 8px; }
-    .bonus-box .br { font-size: 14px; color: #3B6D11; line-height: 1.8; }
+    .bonus-box .br { font-size: 15px; color: #3B6D11; line-height: 1.8; }
     .bonus-box .bc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .bonus-chip {
       background: #fff; border: 1px solid #97C459;
       border-radius: 6px; padding: 5px 12px;
-      font-size: 13px; color: #3B6D11; font-weight: 500;
+      font-size: 14px; color: #3B6D11; font-weight: 500;
     }
     .no-bonus {
       background: #f9f9f9; border: 1px solid #e8e8e8;
       border-radius: 10px; padding: 12px 16px;
-      font-size: 14px; color: #aaa;
+      font-size: 15px; color: #aaa;
     }
 
     .note {
-      font-size: 13px; color: #888; line-height: 1.8;
+      font-size: 14px; color: #888; line-height: 1.8;
       padding: 12px 16px; background: #f9f9f9;
       border-radius: 8px; border: 1px solid #ebebeb;
     }
@@ -194,23 +194,23 @@
     .tog-row::-webkit-scrollbar { display: none; }
     .tog {
       padding: 7px 13px; border-radius: 20px; border: 1px solid #ddd;
-      font-size: 14px; cursor: pointer; background: #fff; color: #555;
+      font-size: 15px; cursor: pointer; background: #fff; color: #555;
       white-space: nowrap; flex-shrink: 0;
       -webkit-tap-highlight-color: transparent; transition: all 0.12s;
     }
     .tog.active { background: #CC0000; color: #fff; border-color: #CC0000; font-weight: 500; }
     .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid #e8e8e8; }
-    table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; min-width: 560px; }
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; min-width: 560px; }
     .tbl th {
       background: #f5f5f5; font-weight: 600; padding: 8px 6px;
       text-align: right; border-bottom: 1px solid #e8e8e8;
-      border-right: 1px solid #eee; color: #777; font-size: 12px; white-space: nowrap;
+      border-right: 1px solid #eee; color: #777; font-size: 13px; white-space: nowrap;
     }
     .tbl th:first-child { text-align: left; width: 60px; }
     .tbl td {
       padding: 6px 6px; border-bottom: 1px solid #f0f0f0;
       border-right: 1px solid #f0f0f0; text-align: right;
-      font-size: 13px; color: #333; white-space: nowrap;
+      font-size: 14px; color: #333; white-space: nowrap;
     }
     .tbl td:first-child { text-align: left; font-weight: 600; color: #666; background: #fafafa; }
     .tbl tr:last-child td { border-bottom: none; }
@@ -1022,7 +1022,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
   <div><div class="cv-rule"></div><div class="cv-lbl">SPECIAL OFFER</div><div class="cv-cli">${clientName.toUpperCase()}</div><div class="cv-dt">${offerDate}</div></div>
   <div class="cv-logos">
     <img src="${LOGO_SRC}" class="logo-img" style="height:36pt;" alt="DGNetwork">
-    <img src="${ESSO_SRC}" class="logo-img esso-logo" style="height:60pt;" alt="Esso">
+    <img src="${ESSO_SRC}" class="logo-img esso-logo" style="height:70pt;" alt="Esso">
   </div>
 </div></div>
 <div class="slide slide-offer"><div class="slide-inner">
