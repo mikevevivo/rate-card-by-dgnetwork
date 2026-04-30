@@ -581,7 +581,9 @@
       const VOL_D     = {5:0,10:0.05,15:0.10,20:0.15,25:0.18,30:0.22,35:0.25};
       const DUR_D     = {1:0,2:0.03,3:0.05,4:0.07,5:0.09,6:0.12,7:0.14,8:0.16,9:0.18,10:0.20,11:0.22,12:0.25};
       const VOL_BONUS = {5:0,10:1,15:2,20:3,25:4,30:5,35:6};
-      const LOGO_SRC  = new URL('/assets/dg-network-logo.png', window.location.href).href;
+      const LOGO_SRC  = new URL('/assets/DG NETWORK LOGO-02.png', window.location.href).href;
+      const AGENCY_LOGO_SRC = new URL('/assets/dg-network-logo.png', window.location.href).href;
+      const ESSO_SRC  = new URL('/assets/Esso-no_background.png', window.location.href).href;
       const PHOTO_SRC = new URL('/assets/Volvo_C40.jpeg', window.location.href).href;
 
       const CITIES = [
@@ -893,7 +895,7 @@
 <div class="slide slide-agency">
   <div class="slide-inner">
     <div class="ag-badge">FOR AGENCY / ASSOCIATE RECORDS ONLY &mdash; NOT FOR CLIENT DISTRIBUTION</div>
-    <img src="${LOGO_SRC}" class="logo-img" style="height:32pt;margin-bottom:10mm;" alt="DGNetwork">
+    <img src="${AGENCY_LOGO_SRC}" class="logo-img logo-agency" alt="DGNetwork">
     <h2 class="ag-title">Commission Breakdown</h2>
     <p class="ag-sub">Campaign: ${cityLine} &middot; ${n} displays &times; ${mo} month${mo > 1 ? 's' : ''} &middot; ${offerDate}</p>
     <div class="ag-tbl">
@@ -907,7 +909,7 @@
     </div>
     ${cr > 0 ? `<p class="ag-note">Bonus credits (${cr} display-months, value &#8364;${crVal.toLocaleString()}) are excluded from all commission calculations.</p>` : ''}
     <div class="slide-footer">
-      <img src="${LOGO_SRC}" class="logo-img" style="height:22pt;" alt="DGNetwork">
+      <img src="${AGENCY_LOGO_SRC}" class="logo-img logo-agency-footer" alt="DGNetwork">
       <div class="ft-contact">${salesName ? (salesName + ' &middot; ') : ''}${salesMobile || ''}</div>
     </div>
   </div>
@@ -918,93 +920,97 @@
 <title>DGNetwork Special Offer &mdash; ${clientName}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
+:root{--fs:1.12;}
 body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
 .slide{width:297mm;min-height:210mm;page-break-after:always;page-break-inside:avoid;display:flex;align-items:stretch;}
 .slide:last-child{page-break-after:avoid;}
 .slide-inner{width:100%;display:flex;flex-direction:column;position:relative;}
 .logo-img{display:block;}
+.esso-logo{display:block;width:auto;}
+.logo-agency{height:26pt;width:auto;max-width:140pt;object-fit:contain;margin-bottom:8mm;}
+.logo-agency-footer{height:20pt;width:auto;max-width:120pt;object-fit:contain;}
 .slide-cover{background:#000;}
 .slide-cover .slide-inner{padding:38mm 20mm 18mm;justify-content:space-between;}
-.cv-hl .l1,.cv-hl .l2{font-size:44pt;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;}
+.cv-hl .l1,.cv-hl .l2{font-size:calc(44pt * var(--fs));font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;}
 .cv-hl .red{color:#CC0000;}
 .cv-rule{width:30pt;height:4pt;background:#CC0000;margin:9mm 0 7mm;}
-.cv-lbl{font-size:17pt;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:3mm;}
-.cv-cli{font-size:13pt;color:#aaa;letter-spacing:1px;}
-.cv-dt{font-size:9pt;color:#666;margin-top:2mm;}
+.cv-lbl{font-size:calc(17pt * var(--fs));font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:3mm;}
+.cv-cli{font-size:calc(13pt * var(--fs));color:#aaa;letter-spacing:1px;}
+.cv-dt{font-size:calc(9pt * var(--fs));color:#666;margin-top:2mm;}
 .cv-logos{display:flex;align-items:center;justify-content:space-between;}
 .esso-b{width:34pt;height:34pt;background:#fff;border-radius:50%;border:2pt solid #003087;display:flex;align-items:center;justify-content:center;}
-.esso-t{font-size:13pt;font-weight:900;color:#CC0000;font-style:italic;}
+.esso-t{font-size:calc(13pt * var(--fs));font-weight:900;color:#CC0000;font-style:italic;}
 .slide-offer .slide-inner{padding:13mm 15mm 9mm;justify-content:space-between;}
 .off-hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:1.5pt solid #e0e0e0;padding-bottom:4mm;margin-bottom:6mm;}
-.off-ti{font-size:12pt;font-weight:700;color:#CC0000;text-align:right;line-height:1.3;}
-.off-ti span{font-size:8pt;color:#888;font-weight:400;display:block;}
+.off-ti{font-size:calc(12pt * var(--fs));font-weight:700;color:#CC0000;text-align:right;line-height:1.3;}
+.off-ti span{font-size:calc(8pt * var(--fs));color:#888;font-weight:400;display:block;}
 .off-body{display:flex;gap:9mm;flex:1;}
 .off-l{flex:1;}.off-r{width:78mm;}
-.sec-lbl{font-size:7pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3mm;}
+.sec-lbl{font-size:calc(7pt * var(--fs));font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3mm;}
 .deal-tbl{width:100%;border-collapse:collapse;margin-bottom:5mm;}
-.deal-tbl td{padding:2.5mm 3mm;border-bottom:.5pt solid #f0f0f0;font-size:9pt;vertical-align:top;}
+.deal-tbl td{padding:2.5mm 3mm;border-bottom:.5pt solid #f0f0f0;font-size:calc(9pt * var(--fs));vertical-align:top;}
 .deal-tbl td:first-child{color:#888;width:50%;}
 .deal-tbl td:last-child{font-weight:700;color:#111;text-align:right;}
-.deal-tbl tr.trow td{border-top:1.5pt solid #111;border-bottom:none;font-size:11pt;padding-top:3mm;}
+.deal-tbl tr.trow td{border-top:1.5pt solid #111;border-bottom:none;font-size:calc(11pt * var(--fs));padding-top:3mm;}
 .deal-tbl tr.trow td:last-child{color:#CC0000;}
 .sbox{background:#f8f8f8;border-radius:5pt;padding:3.5mm 4mm;margin-bottom:4mm;border-left:3pt solid #CC0000;}
-.sbox-t{font-size:8pt;font-weight:700;color:#111;margin-bottom:2mm;}
-.sbox p{font-size:8pt;color:#444;line-height:1.5;}
+.sbox-t{font-size:calc(8pt * var(--fs));font-weight:700;color:#111;margin-bottom:2mm;}
+.sbox p{font-size:calc(8pt * var(--fs));color:#444;line-height:1.5;}
 .bonus-sec{border-left-color:#1D9E75;}.bonus-sec .sbox-t{color:#1D9E75;}
 .bchips{display:flex;flex-wrap:wrap;gap:3pt;margin:2mm 0 1mm;}
-.bchip{background:#fff;border:1pt solid #97C459;border-radius:3pt;padding:1.5pt 5pt;font-size:7pt;color:#3B6D11;font-weight:700;}
-.snote{font-size:7pt;color:#aaa;margin-top:1.5mm;}
+.bchip{background:#fff;border:1pt solid #97C459;border-radius:3pt;padding:1.5pt 5pt;font-size:calc(7pt * var(--fs));color:#3B6D11;font-weight:700;}
+.snote{font-size:calc(7pt * var(--fs));color:#aaa;margin-top:1.5mm;}
 .vbox{background:#f0f6ff;border-radius:5pt;padding:3.5mm 4mm;margin-bottom:4mm;border-left:3pt solid #185FA5;}
-.vbox-t{font-size:7pt;font-weight:700;color:#185FA5;margin-bottom:2mm;}
-.vstat{font-size:20pt;font-weight:900;color:#185FA5;line-height:1;margin-bottom:1mm;}
-.vstat span{font-size:9pt;font-weight:400;color:#888;}
-.vmin{font-size:8pt;color:#333;font-weight:700;margin-bottom:1.5mm;}
-.vmeth{font-size:7pt;color:#888;line-height:1.4;margin-bottom:2mm;}
+.vbox-t{font-size:calc(7pt * var(--fs));font-weight:700;color:#185FA5;margin-bottom:2mm;}
+.vstat{font-size:calc(20pt * var(--fs));font-weight:900;color:#185FA5;line-height:1;margin-bottom:1mm;}
+.vstat span{font-size:calc(9pt * var(--fs));font-weight:400;color:#888;}
+.vmin{font-size:calc(8pt * var(--fs));color:#333;font-weight:700;margin-bottom:1.5mm;}
+.vmeth{font-size:calc(7pt * var(--fs));color:#888;line-height:1.4;margin-bottom:2mm;}
 .vli{list-style:none;padding:0;}
-.vli li{font-size:8pt;color:#444;padding:1pt 0 1pt 9pt;position:relative;}
-.vli li:before{content:"\\2022";color:#CC0000;font-size:8pt;position:absolute;left:0;top:0;}
+.vli li{font-size:calc(8pt * var(--fs));color:#444;padding:1pt 0 1pt 9pt;position:relative;}
+.vli li:before{content:"\\2022";color:#CC0000;font-size:calc(8pt * var(--fs));position:absolute;left:0;top:0;}
 .nbox{background:#f8f8f8;border-radius:5pt;padding:3mm 4mm;border-left:3pt solid #CC0000;}
-.nbox-t{font-size:7pt;font-weight:700;color:#111;margin-bottom:1.5mm;}
-.nbox p{font-size:7.5pt;color:#444;line-height:1.4;}
+.nbox-t{font-size:calc(7pt * var(--fs));font-weight:700;color:#111;margin-bottom:1.5mm;}
+.nbox p{font-size:calc(7.5pt * var(--fs));color:#444;line-height:1.4;}
 .slide-footer{display:flex;align-items:center;justify-content:space-between;border-top:.5pt solid #e0e0e0;padding-top:3mm;margin-top:auto;}
-.ft-expiry{font-size:7pt;color:#bbb;}
-.ft-contact{font-size:7.5pt;color:#888;text-align:right;}
+.ft-expiry{font-size:calc(7pt * var(--fs));color:#bbb;}
+.ft-contact{font-size:calc(7.5pt * var(--fs));color:#888;text-align:right;}
 .slide-why .slide-inner{padding:13mm 15mm 9mm;justify-content:space-between;}
 .why-hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:1.5pt solid #e0e0e0;padding-bottom:4mm;margin-bottom:6mm;}
-.why-ti{font-size:12pt;font-weight:700;color:#CC0000;text-align:right;}
-.why-ti span{font-size:8pt;color:#888;font-weight:400;display:block;}
+.why-ti{font-size:calc(12pt * var(--fs));font-weight:700;color:#CC0000;text-align:right;}
+.why-ti span{font-size:calc(8pt * var(--fs));color:#888;font-weight:400;display:block;}
 .why-body{display:flex;gap:9mm;flex:1;}
 .why-l{flex:1;}.why-r{width:82mm;}
-.chart-title{font-size:9pt;font-weight:700;color:#111;margin-bottom:5mm;text-align:center;}
+.chart-title{font-size:calc(9pt * var(--fs));font-weight:700;color:#111;margin-bottom:5mm;text-align:center;}
 .br-row{display:flex;align-items:center;gap:4mm;margin-bottom:3mm;}
-.br-lbl{font-size:7.5pt;color:#555;width:46mm;text-align:right;flex-shrink:0;}
+.br-lbl{font-size:calc(7.5pt * var(--fs));color:#555;width:46mm;text-align:right;flex-shrink:0;}
 .br-track{flex:1;background:#f0f0f0;border-radius:2pt;height:13pt;}
 .br-fill{height:100%;border-radius:2pt;display:flex;align-items:center;padding-left:3pt;}
-.br-fill span{font-size:7pt;font-weight:700;color:#fff;white-space:nowrap;}
-.chart-note{font-size:6.5pt;color:#aaa;margin-top:5mm;line-height:1.4;}
+.br-fill span{font-size:calc(7pt * var(--fs));font-weight:700;color:#fff;white-space:nowrap;}
+.chart-note{font-size:calc(6.5pt * var(--fs));color:#aaa;margin-top:5mm;line-height:1.4;}
 .photo-img{width:82mm;height:110mm;object-fit:cover;border-radius:5pt;display:block;}
-.photo-cap{font-size:7pt;color:#888;margin-top:3mm;text-align:center;line-height:1.3;}
+.photo-cap{font-size:calc(7pt * var(--fs));color:#888;margin-top:3mm;text-align:center;line-height:1.3;}
 .slide-closing{background:#000;}
 .slide-closing .slide-inner{padding:28mm 20mm 18mm;justify-content:space-between;}
-.cl-hl .l{font-size:40pt;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.05;}
+.cl-hl .l{font-size:calc(40pt * var(--fs));font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.05;}
 .cl-hl .red{color:#CC0000;}
 .cl-rule{width:30pt;height:4pt;background:#CC0000;margin:9mm 0;}
 .cl-footer{display:flex;align-items:flex-end;justify-content:space-between;}
 .cl-contact{text-align:right;}
-.cl-contact .cname{font-size:11pt;color:#fff;font-weight:700;}
-.cl-contact .cmob{font-size:9pt;color:#aaa;}
+.cl-contact .cname{font-size:calc(11pt * var(--fs));color:#fff;font-weight:700;}
+.cl-contact .cmob{font-size:calc(9pt * var(--fs));color:#aaa;}
 .slide-agency .slide-inner{padding:9mm 15mm;justify-content:space-between;border-left:6pt solid #CC0000;}
-.ag-badge{background:#CC0000;color:#fff;font-size:6.5pt;font-weight:700;letter-spacing:.1em;padding:2.5pt 7pt;border-radius:3pt;display:inline-block;margin-bottom:5mm;}
-.ag-title{font-size:19pt;font-weight:900;color:#111;margin-bottom:2mm;}
-.ag-sub{font-size:8pt;color:#888;margin-bottom:6mm;}
+.ag-badge{background:#CC0000;color:#fff;font-size:calc(6.5pt * var(--fs));font-weight:700;letter-spacing:.1em;padding:2.5pt 7pt;border-radius:3pt;display:inline-block;margin-bottom:5mm;}
+.ag-title{font-size:calc(19pt * var(--fs));font-weight:900;color:#111;margin-bottom:2mm;}
+.ag-sub{font-size:calc(8pt * var(--fs));color:#888;margin-bottom:6mm;}
 .ag-tbl{width:100%;border-collapse:collapse;margin-bottom:4mm;}
-.ag-row{display:flex;justify-content:space-between;align-items:center;padding:3mm 4mm;border-bottom:.5pt solid #f0f0f0;font-size:9.5pt;}
-.ag-hd{background:#f5f5f5;font-size:8pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;}
+.ag-row{display:flex;justify-content:space-between;align-items:center;padding:3mm 4mm;border-bottom:.5pt solid #f0f0f0;font-size:calc(9.5pt * var(--fs));}
+.ag-hd{background:#f5f5f5;font-size:calc(8pt * var(--fs));font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;}
 .ag-hl-ag{background:#fff8e1;font-weight:600;}
 .ag-hl-as{background:#e8f4ff;font-weight:600;color:#185FA5;}
 .ag-tot{background:#111;color:#fff;font-weight:700;border-bottom:none;}
 .ag-mo{background:#f0f6ff;font-weight:600;color:#185FA5;border-bottom:none;margin-top:2mm;}
-.ag-note{font-size:7pt;color:#aaa;margin-bottom:4mm;line-height:1.5;}
+.ag-note{font-size:calc(7pt * var(--fs));color:#aaa;margin-bottom:4mm;line-height:1.5;}
 @media print{
   @page{size:A4 landscape;margin:0;}
   body{margin:0;}
@@ -1016,7 +1022,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
   <div><div class="cv-rule"></div><div class="cv-lbl">SPECIAL OFFER</div><div class="cv-cli">${clientName.toUpperCase()}</div><div class="cv-dt">${offerDate}</div></div>
   <div class="cv-logos">
     <img src="${LOGO_SRC}" class="logo-img" style="height:36pt;" alt="DGNetwork">
-    <div class="esso-b"><span class="esso-t">Esso</span></div>
+    <img src="${ESSO_SRC}" class="logo-img esso-logo" style="height:60pt;" alt="Esso">
   </div>
 </div></div>
 <div class="slide slide-offer"><div class="slide-inner">
@@ -1058,7 +1064,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
 <div class="slide slide-why"><div class="slide-inner">
   <div class="why-hdr">
     <img src="${LOGO_SRC}" class="logo-img" style="height:26pt;" alt="DGNetwork">
-    <div class="why-ti">Why DGNetwork ESSO?<span>Annual visitors comparison &mdash; Cyprus key locations 2025</span></div>
+    <div class="why-ti">Why DGNetwork at ESSO network?<span>Annual visitors comparison &mdash; Cyprus key locations 2025</span></div>
   </div>
   <div class="why-body">
     <div class="why-l">
