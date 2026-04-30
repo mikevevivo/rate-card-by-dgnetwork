@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#111111">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <title>Rate Card by DG Network</title>
+  <title>DGNetwork — ESSO DOOH Rate Card</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html {
@@ -222,6 +222,82 @@
       table.tbl { min-width: 820px; table-layout: auto; }
     }
 
+    .offer-card {
+      background: #fff;
+      border: 2px solid #CC0000;
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .offer-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #CC0000;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .offer-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 480px) { .offer-fields { grid-template-columns: 1fr; } }
+    .offer-field { display: flex; flex-direction: column; gap: 5px; }
+    .offer-field label { font-size: 14px; color: #666; font-weight: 500; }
+    .offer-field input[type=text] {
+      width: 100%;
+      padding: 11px 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #111;
+      background: #fff;
+      outline: none;
+    }
+    .offer-field input[type=text]:focus { border-color: #CC0000; }
+
+    .agency-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9f9f9;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      gap: 14px;
+    }
+    .agency-toggle-label { font-size: 14px; color: #444; font-weight: 500; }
+    .agency-toggle-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .toggle-switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ddd; border-radius: 26px; transition: .2s; }
+    .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+    .toggle-switch input:checked + .toggle-slider { background: #CC0000; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+    .btn-generate {
+      width: 100%;
+      padding: 15px;
+      background: #CC0000;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .15s;
+    }
+    .btn-generate:active { background: #aa0000; }
+    .btn-generate:disabled { background: #ccc; cursor: not-allowed; }
+
     .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 480px) { .rules-grid { grid-template-columns: 1fr; } }
     .rule-card {
@@ -353,6 +429,35 @@
     <hr class="divider">
 
     <div class="sec">
+      <div class="sec-label">Generate client offer</div>
+      <div class="offer-card">
+        <div class="offer-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Offer details
+        </div>
+        <div class="offer-fields">
+          <div class="offer-field"><label>Client / Company name</label><input type="text" id="clientName" placeholder="e.g. Acme Ltd"></div>
+          <div class="offer-field"><label>Salesperson name</label><input type="text" id="salesName" value="Manolis Ladavos | Head of Sales &amp; BD"></div>
+          <div class="offer-field"><label>Salesperson mobile</label><input type="text" id="salesMobile" value="+357 9655 5155"></div>
+          <div class="offer-field"><label>Payment terms</label><input type="text" id="paymentTerms" value="Prepayment"></div>
+        </div>
+        <div class="agency-toggle-row">
+          <div>
+            <div class="agency-toggle-label">Include agency / associate commission slide</div>
+            <div class="agency-toggle-sub">Adds slide 5 with commission breakdown for agency or associate records only</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="agencyToggle"><span class="toggle-slider"></span></label>
+        </div>
+        <button class="btn-generate" id="btnGenerate" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Generate &amp; Download PDF Offer
+        </button>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="sec">
       <div class="sec-label">Scheme rules</div>
       <div class="rules-grid">
         <div class="rule-card">
@@ -476,6 +581,8 @@
       const VOL_D     = {5:0,10:0.05,15:0.10,20:0.15,25:0.18,30:0.22,35:0.25};
       const DUR_D     = {1:0,2:0.03,3:0.05,4:0.07,5:0.09,6:0.12,7:0.14,8:0.16,9:0.18,10:0.20,11:0.22,12:0.25};
       const VOL_BONUS = {5:0,10:1,15:2,20:3,25:4,30:5,35:6};
+      const LOGO_SRC  = new URL('/assets/dg-network-logo.png', window.location.href).href;
+      const PHOTO_SRC = new URL('/assets/Volvo_C40.jpeg', window.location.href).href;
 
       const CITIES = [
         { id:'nic',   name:'Nicosia',           count:14, multi:false },
@@ -496,6 +603,18 @@
         22: { cls:'vol22', label:'22% volume discount' },
         25: { cls:'vol25', label:'25% volume discount' },
       };
+
+      const VISITORS = [
+        { l: 'Larnaca Airport', v: 10, t: 'blue' },
+        { l: 'Paphos Airport', v: 3, t: 'blue' },
+        { l: 'Mall of Cyprus', v: 6, t: 'purple' },
+        { l: 'Mall of Engomi', v: 3, t: 'purple' },
+        { l: 'Nicosia Mall', v: 6, t: 'purple' },
+        { l: 'Metropolis Mall', v: 4.5, t: 'purple' },
+        { l: 'My Mall', v: 5, t: 'purple' },
+        { l: 'Kings Mall Paphos', v: 3, t: 'purple' },
+        { l: 'ESSO 35-Station Network', v: 20, t: 'red' },
+      ];
 
       let displays   = 20;
       let activeCity = null;
@@ -732,6 +851,251 @@
         document.querySelectorAll('.tog').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         render();
+      });
+
+      document.getElementById('btnGenerate').addEventListener('click', () => {
+        const clientName = document.getElementById('clientName').value.trim() || 'Valued Client';
+        const salesName = document.getElementById('salesName').value.trim();
+        const salesMobile = document.getElementById('salesMobile').value.trim();
+        const payTerms = document.getElementById('paymentTerms').value.trim() || 'Prepayment';
+        const showAgency = document.getElementById('agencyToggle').checked;
+        const mo = +document.getElementById('selMo').value;
+        const agPct = +document.getElementById('agSlider').value / 100;
+        const asPct = +document.getElementById('asSlider').value / 100;
+        const n = displays;
+        const tier = snapTier(n);
+        const d = disc(n, mo);
+        const np = netPrice(n, mo);
+        const tv = totalNet(n, mo);
+        const listTot = LIST * n * mo;
+        const agComm = tv * agPct;
+        const asComm = tv * asPct;
+        const moRev = tv - agComm - asComm;
+        const cr = bonusCr(n, mo);
+        const crVal = cr * LIST;
+        const cityLabel = activeCity ? (CITIES.find(c => c.id === activeCity) || {}).name : null;
+        const cityLine = cityLabel || (n + ' displays nationwide');
+        const offerDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const expiry = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const bonusSec = cr > 0
+          ? `<div class="sbox bonus-sec"><div class="sbox-t">&#127873; Bonus Display Credits</div><p>As part of this campaign, <strong>${clientName}</strong> earns <strong>${cr} bonus display-months</strong> (list value <strong>&#8364;${crVal.toLocaleString()}</strong>) redeemable within 6 months post-campaign.</p><div class="bchips">${bonusCombos(cr).map(c => `<div class="bchip">${c.d} displays &times; ${c.m} month${c.m > 1 ? 's' : ''}</div>`).join('')}</div><p class="snote">Min 5 display-months per redemption &middot; Split bookings allowed &middot; Non-transferable &middot; Cannot be combined with other promotions</p></div>`
+          : '';
+
+        const MAX_V = 20;
+        const chartBars = VISITORS.map(b => {
+          const pct = Math.round((b.v / MAX_V) * 100);
+          const col = b.t === 'red' ? '#CC0000' : (b.t === 'blue' ? '#7F77DD' : 'rgba(127,119,221,0.55)');
+          return `<div class="br-row"><div class="br-lbl">${b.l}</div><div class="br-track"><div class="br-fill" style="width:${pct}%;background:${col}"><span>${b.v}M</span></div></div></div>`;
+        }).join('');
+
+        const agencySlide = showAgency ? `
+<div class="slide slide-agency">
+  <div class="slide-inner">
+    <div class="ag-badge">FOR AGENCY / ASSOCIATE RECORDS ONLY &mdash; NOT FOR CLIENT DISTRIBUTION</div>
+    <img src="${LOGO_SRC}" class="logo-img" style="height:32pt;margin-bottom:10mm;" alt="DGNetwork">
+    <h2 class="ag-title">Commission Breakdown</h2>
+    <p class="ag-sub">Campaign: ${cityLine} &middot; ${n} displays &times; ${mo} month${mo > 1 ? 's' : ''} &middot; ${offerDate}</p>
+    <div class="ag-tbl">
+      <div class="ag-row ag-hd"><div>Item</div><div>Amount</div></div>
+      <div class="ag-row"><div>Total campaign value (net of discount)</div><div>${fmt(tv)}</div></div>
+      <div class="ag-row"><div>Combined discount applied</div><div>${fmtP(d)}</div></div>
+      ${agPct > 0 ? `<div class="ag-row ag-hl-ag"><div>Agency commission (${fmtPr(agPct)} of ${fmt(tv)})</div><div>${fmt(agComm)}</div></div>` : ''}
+      ${asPct > 0 ? `<div class="ag-row ag-hl-as"><div>Associate commission (${fmtPr(asPct)} of ${fmt(tv)})</div><div>${fmt(asComm)}</div></div>` : ''}
+      <div class="ag-row ag-tot"><div>Total commissions payable</div><div>${fmt(agComm + asComm)}</div></div>
+      <div class="ag-row ag-mo"><div>DGNetwork media owner revenue</div><div>${fmt(moRev)}</div></div>
+    </div>
+    ${cr > 0 ? `<p class="ag-note">Bonus credits (${cr} display-months, value &#8364;${crVal.toLocaleString()}) are excluded from all commission calculations.</p>` : ''}
+    <div class="slide-footer">
+      <img src="${LOGO_SRC}" class="logo-img" style="height:22pt;" alt="DGNetwork">
+      <div class="ft-contact">${salesName ? (salesName + ' &middot; ') : ''}${salesMobile || ''}</div>
+    </div>
+  </div>
+</div>` : '';
+
+        const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>DGNetwork Special Offer &mdash; ${clientName}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
+.slide{width:297mm;min-height:210mm;page-break-after:always;page-break-inside:avoid;display:flex;align-items:stretch;}
+.slide:last-child{page-break-after:avoid;}
+.slide-inner{width:100%;display:flex;flex-direction:column;position:relative;}
+.logo-img{display:block;}
+.slide-cover{background:#000;}
+.slide-cover .slide-inner{padding:38mm 20mm 18mm;justify-content:space-between;}
+.cv-hl .l1,.cv-hl .l2{font-size:44pt;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;}
+.cv-hl .red{color:#CC0000;}
+.cv-rule{width:30pt;height:4pt;background:#CC0000;margin:9mm 0 7mm;}
+.cv-lbl{font-size:17pt;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:3mm;}
+.cv-cli{font-size:13pt;color:#aaa;letter-spacing:1px;}
+.cv-dt{font-size:9pt;color:#666;margin-top:2mm;}
+.cv-logos{display:flex;align-items:center;justify-content:space-between;}
+.esso-b{width:34pt;height:34pt;background:#fff;border-radius:50%;border:2pt solid #003087;display:flex;align-items:center;justify-content:center;}
+.esso-t{font-size:13pt;font-weight:900;color:#CC0000;font-style:italic;}
+.slide-offer .slide-inner{padding:13mm 15mm 9mm;justify-content:space-between;}
+.off-hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:1.5pt solid #e0e0e0;padding-bottom:4mm;margin-bottom:6mm;}
+.off-ti{font-size:12pt;font-weight:700;color:#CC0000;text-align:right;line-height:1.3;}
+.off-ti span{font-size:8pt;color:#888;font-weight:400;display:block;}
+.off-body{display:flex;gap:9mm;flex:1;}
+.off-l{flex:1;}.off-r{width:78mm;}
+.sec-lbl{font-size:7pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3mm;}
+.deal-tbl{width:100%;border-collapse:collapse;margin-bottom:5mm;}
+.deal-tbl td{padding:2.5mm 3mm;border-bottom:.5pt solid #f0f0f0;font-size:9pt;vertical-align:top;}
+.deal-tbl td:first-child{color:#888;width:50%;}
+.deal-tbl td:last-child{font-weight:700;color:#111;text-align:right;}
+.deal-tbl tr.trow td{border-top:1.5pt solid #111;border-bottom:none;font-size:11pt;padding-top:3mm;}
+.deal-tbl tr.trow td:last-child{color:#CC0000;}
+.sbox{background:#f8f8f8;border-radius:5pt;padding:3.5mm 4mm;margin-bottom:4mm;border-left:3pt solid #CC0000;}
+.sbox-t{font-size:8pt;font-weight:700;color:#111;margin-bottom:2mm;}
+.sbox p{font-size:8pt;color:#444;line-height:1.5;}
+.bonus-sec{border-left-color:#1D9E75;}.bonus-sec .sbox-t{color:#1D9E75;}
+.bchips{display:flex;flex-wrap:wrap;gap:3pt;margin:2mm 0 1mm;}
+.bchip{background:#fff;border:1pt solid #97C459;border-radius:3pt;padding:1.5pt 5pt;font-size:7pt;color:#3B6D11;font-weight:700;}
+.snote{font-size:7pt;color:#aaa;margin-top:1.5mm;}
+.vbox{background:#f0f6ff;border-radius:5pt;padding:3.5mm 4mm;margin-bottom:4mm;border-left:3pt solid #185FA5;}
+.vbox-t{font-size:7pt;font-weight:700;color:#185FA5;margin-bottom:2mm;}
+.vstat{font-size:20pt;font-weight:900;color:#185FA5;line-height:1;margin-bottom:1mm;}
+.vstat span{font-size:9pt;font-weight:400;color:#888;}
+.vmin{font-size:8pt;color:#333;font-weight:700;margin-bottom:1.5mm;}
+.vmeth{font-size:7pt;color:#888;line-height:1.4;margin-bottom:2mm;}
+.vli{list-style:none;padding:0;}
+.vli li{font-size:8pt;color:#444;padding:1pt 0 1pt 9pt;position:relative;}
+.vli li:before{content:"\\2022";color:#CC0000;font-size:8pt;position:absolute;left:0;top:0;}
+.nbox{background:#f8f8f8;border-radius:5pt;padding:3mm 4mm;border-left:3pt solid #CC0000;}
+.nbox-t{font-size:7pt;font-weight:700;color:#111;margin-bottom:1.5mm;}
+.nbox p{font-size:7.5pt;color:#444;line-height:1.4;}
+.slide-footer{display:flex;align-items:center;justify-content:space-between;border-top:.5pt solid #e0e0e0;padding-top:3mm;margin-top:auto;}
+.ft-expiry{font-size:7pt;color:#bbb;}
+.ft-contact{font-size:7.5pt;color:#888;text-align:right;}
+.slide-why .slide-inner{padding:13mm 15mm 9mm;justify-content:space-between;}
+.why-hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:1.5pt solid #e0e0e0;padding-bottom:4mm;margin-bottom:6mm;}
+.why-ti{font-size:12pt;font-weight:700;color:#CC0000;text-align:right;}
+.why-ti span{font-size:8pt;color:#888;font-weight:400;display:block;}
+.why-body{display:flex;gap:9mm;flex:1;}
+.why-l{flex:1;}.why-r{width:82mm;}
+.chart-title{font-size:9pt;font-weight:700;color:#111;margin-bottom:5mm;text-align:center;}
+.br-row{display:flex;align-items:center;gap:4mm;margin-bottom:3mm;}
+.br-lbl{font-size:7.5pt;color:#555;width:46mm;text-align:right;flex-shrink:0;}
+.br-track{flex:1;background:#f0f0f0;border-radius:2pt;height:13pt;}
+.br-fill{height:100%;border-radius:2pt;display:flex;align-items:center;padding-left:3pt;}
+.br-fill span{font-size:7pt;font-weight:700;color:#fff;white-space:nowrap;}
+.chart-note{font-size:6.5pt;color:#aaa;margin-top:5mm;line-height:1.4;}
+.photo-img{width:82mm;height:110mm;object-fit:cover;border-radius:5pt;display:block;}
+.photo-cap{font-size:7pt;color:#888;margin-top:3mm;text-align:center;line-height:1.3;}
+.slide-closing{background:#000;}
+.slide-closing .slide-inner{padding:28mm 20mm 18mm;justify-content:space-between;}
+.cl-hl .l{font-size:40pt;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.05;}
+.cl-hl .red{color:#CC0000;}
+.cl-rule{width:30pt;height:4pt;background:#CC0000;margin:9mm 0;}
+.cl-footer{display:flex;align-items:flex-end;justify-content:space-between;}
+.cl-contact{text-align:right;}
+.cl-contact .cname{font-size:11pt;color:#fff;font-weight:700;}
+.cl-contact .cmob{font-size:9pt;color:#aaa;}
+.slide-agency .slide-inner{padding:9mm 15mm;justify-content:space-between;border-left:6pt solid #CC0000;}
+.ag-badge{background:#CC0000;color:#fff;font-size:6.5pt;font-weight:700;letter-spacing:.1em;padding:2.5pt 7pt;border-radius:3pt;display:inline-block;margin-bottom:5mm;}
+.ag-title{font-size:19pt;font-weight:900;color:#111;margin-bottom:2mm;}
+.ag-sub{font-size:8pt;color:#888;margin-bottom:6mm;}
+.ag-tbl{width:100%;border-collapse:collapse;margin-bottom:4mm;}
+.ag-row{display:flex;justify-content:space-between;align-items:center;padding:3mm 4mm;border-bottom:.5pt solid #f0f0f0;font-size:9.5pt;}
+.ag-hd{background:#f5f5f5;font-size:8pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;}
+.ag-hl-ag{background:#fff8e1;font-weight:600;}
+.ag-hl-as{background:#e8f4ff;font-weight:600;color:#185FA5;}
+.ag-tot{background:#111;color:#fff;font-weight:700;border-bottom:none;}
+.ag-mo{background:#f0f6ff;font-weight:600;color:#185FA5;border-bottom:none;margin-top:2mm;}
+.ag-note{font-size:7pt;color:#aaa;margin-bottom:4mm;line-height:1.5;}
+@media print{
+  @page{size:A4 landscape;margin:0;}
+  body{margin:0;}
+  .slide{page-break-after:always;}
+}
+</style></head><body>
+<div class="slide slide-cover"><div class="slide-inner">
+  <div class="cv-hl"><div class="l1">DIGITAL IS THE</div><div class="l2">WAY <span class="red">FORWARD</span></div></div>
+  <div><div class="cv-rule"></div><div class="cv-lbl">SPECIAL OFFER</div><div class="cv-cli">${clientName.toUpperCase()}</div><div class="cv-dt">${offerDate}</div></div>
+  <div class="cv-logos">
+    <img src="${LOGO_SRC}" class="logo-img" style="height:36pt;" alt="DGNetwork">
+    <div class="esso-b"><span class="esso-t">Esso</span></div>
+  </div>
+</div></div>
+<div class="slide slide-offer"><div class="slide-inner">
+  <div class="off-hdr">
+    <img src="${LOGO_SRC}" class="logo-img" style="height:26pt;" alt="DGNetwork">
+    <div class="off-ti">DGNetwork ESSO &mdash; Special Offer<span>${cityLine} &middot; ${mo} month${mo > 1 ? 's' : ''}</span></div>
+  </div>
+  <div class="off-body">
+    <div class="off-l">
+      <div class="sec-lbl">Campaign details</div>
+      <table class="deal-tbl">
+        <tr><td>Client</td><td>${clientName}</td></tr>
+        <tr><td>Package</td><td>${n} displays &middot; ${cityLine}</td></tr>
+        <tr><td>Duration</td><td>${mo} month${mo > 1 ? 's' : ''}</td></tr>
+        <tr><td>List price / display / month</td><td>&euro;250.00</td></tr>
+        <tr><td>Net price / display / month</td><td>${fmtD(np)}</td></tr>
+        <tr><td>Discount applied</td><td>${fmtP(d)}</td></tr>
+        <tr><td>Payment terms</td><td>${payTerms}</td></tr>
+        <tr class="trow"><td>Total campaign value</td><td>${fmt(tv)} + VAT</td></tr>
+      </table>
+      ${bonusSec}
+    </div>
+    <div class="off-r">
+      <div class="vbox">
+        <div class="vbox-t">&#128202; Audience reach</div>
+        <div class="vstat">${(n * 115500).toLocaleString()}<span> minimum views/month</span></div>
+        <div class="vmin">At full 8-slot occupancy &mdash; actual views are higher at current inventory levels.</div>
+        <div class="vmeth">${n} display${n > 1 ? 's' : ''} &times; 115,500 min. views/screen/month<br>= 700 avg cars/day (network avg) &times; 2.2 passengers &times; 2.5 views/advertiser/visit &times; 30 days<br>Each advertiser occupies 1 of 8 slots; seen ~2.5&times; per 5-min dwell at full occupancy.</div>
+        <ul class="vli"><li>Largest captive audience in Cyprus</li><li>High dwell time (~5 minutes per visit)</li><li>High visit frequency (~weekly per customer)</li><li>35 ESSO stations nationwide</li></ul>
+      </div>
+      <div class="nbox"><div class="nbox-t">&#8505;&#65039; Notes</div><p>All prices exclude VAT. Uploading fee: &euro;100 + VAT per campaign. This offer is valid until ${expiry}.</p></div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="ft-expiry">Offer valid until ${expiry} &middot; DGNetwork ESSO DOOH &middot; Confidential</div>
+    <div class="ft-contact">${salesName ? (salesName + ' &middot; ') : ''}${salesMobile || ''}</div>
+  </div>
+</div></div>
+<div class="slide slide-why"><div class="slide-inner">
+  <div class="why-hdr">
+    <img src="${LOGO_SRC}" class="logo-img" style="height:26pt;" alt="DGNetwork">
+    <div class="why-ti">Why DGNetwork ESSO?<span>Annual visitors comparison &mdash; Cyprus key locations 2025</span></div>
+  </div>
+  <div class="why-body">
+    <div class="why-l">
+      <div class="chart-title">Annual visitors (millions)</div>
+      ${chartBars}
+      <div class="chart-note">Source: DGNetwork data 2025. ESSO 35-station network represents combined annual footfall across all stations. Airport and mall figures are individual venue estimates. ESSO network bar shown in red.</div>
+    </div>
+    <div class="why-r">
+      <img src="${PHOTO_SRC}" class="photo-img" alt="DGNetwork LED display at ESSO forecourt">
+      <div class="photo-cap">DGNetwork LED display in action at an ESSO forecourt &mdash; Volvo C40 Recharge campaign</div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="ft-expiry">DGNetwork ESSO DOOH &middot; Confidential</div>
+    <div class="ft-contact">${salesName ? (salesName + ' &middot; ') : ''}${salesMobile || ''}</div>
+  </div>
+</div></div>
+<div class="slide slide-closing"><div class="slide-inner">
+  <div class="cl-hl"><div class="l">THANK YOU FOR</div><div class="l">YOUR <span class="red">TIME</span></div></div>
+  <div class="cl-rule"></div>
+  <div class="cl-footer">
+    <img src="${LOGO_SRC}" class="logo-img" style="height:30pt;" alt="DGNetwork">
+    <div class="cl-contact">
+      ${salesName ? `<div class="cname">${salesName}</div>` : ''}
+      ${salesMobile ? `<div class="cmob">${salesMobile}</div>` : ''}
+    </div>
+  </div>
+</div></div>
+${agencySlide}
+<script>window.onload=function(){window.print();};<\/script>
+</body></html>`;
+
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, '_blank');
+        if (!win) alert('Please allow pop-ups for this site to generate the PDF offer.');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
       });
 
       setDisplays(displays);
